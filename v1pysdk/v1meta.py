@@ -19,7 +19,7 @@ the cached moment, or else you lost.
 class BaseAsset(object):
   """
      Provides common methods for the dynamically derived asset type classes
-     built by V1Meta.create_asset_proxy_class
+     built by V1Meta.asset_class
   """
 
   @classmethod
@@ -42,8 +42,14 @@ class BaseAsset(object):
     if self._v1_needs_refresh:
       self._v1_refresh()
     if self._v1_new_data.has_key(attr):
-      return self._v1_new_data[attr]
-    return self._v1_current_data[attr]
+      value = self._v1_new_data[attr]
+    value = self._v1_current_data[attr]
+    if isinstance(value, list) and attr not in self._v1_multi_valued_relations:
+      if value:
+        value = value[0]
+      else:
+        value = None
+    return value
     
   def __setattr__(self, attr, value):
     if attr.startswith('_v1_'):
@@ -109,20 +115,20 @@ class V1Meta(object):
   #  return self.create_asset_proxy_class(asset_type_name, data)
     
   @cached_by_keyfunc(key_by_args_kw)
-  def create_asset_proxy_class(self, asset_type_name):
+  def asset_class(self, asset_type_name):
     xmldata = self.server.get_meta_xml(asset_type_name)
+    mvrs = [attrdef.get('name') for attrdef in  xmldata.findall('AttributeDefinition') if attrdef.get('ismultivalue') == 'True']
     class_members = {
         '_v1_v1meta_instance': self, 
         '_v1_asset_type_name': asset_type_name,
         '_v1_asset_type_xml': xmldata,
+        '_v1_multi_valued_relations': mvrs,
         }
-          
     for operation in xmldata.findall('Operation'):
       opname = operation.get('name')
       def operation_func(self, opname2=opname):
         self._v1_execute_operation(opname2)
       class_members[opname] = operation_func
-      
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
     
@@ -154,7 +160,7 @@ class V1Meta(object):
       for value_element in related_asset_elements:
         relation_idref = value_element.get('idref')
         reltype, relid = relation_idref.split(':')
-        valueclass = self.create_asset_proxy_class(reltype)
+        valueclass = self.asset_class(reltype)
         value = valueclass.find_by_id(relid)        
         rellist.append(value)
       output[key] = rellist
