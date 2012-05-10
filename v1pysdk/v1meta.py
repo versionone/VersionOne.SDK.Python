@@ -31,6 +31,18 @@ class BaseAsset(object):
     new_asset_instance = Class(asset_id)
     cache[cache_key] = new_asset_instance
     return new_asset_instance
+    
+  @classmethod
+  def query(Class, wherestr):
+    match = Class._v1_v1meta_instance.query(Class._v1_asset_type_name, wherestr)
+    for asset in match.findall('Asset'):
+      idref = asset.get('id')
+      reltype, relid = idref.split(':')
+      assetClass = Class._v1_v1meta_instance.asset_class(reltype)
+      assetinstance = assetClass(relid)
+      yield assetinstance
+      
+      
 
   def __init__(self, oid):
     self._v1_oid = oid
@@ -143,6 +155,9 @@ class V1Meta(object):
     
   def execute_operation(self, asset_type_name, oid, opname):
     return self.server.execute_operation(asset_type_name, oid, opname)
+    
+  def query(self, asset_type_name, wherestring):
+    return self.server.get_query_xml(asset_type_name, wherestring)
     
   def read_asset(self, asset_type_name, asset_oid):
     xml = self.server.get_asset_xml(asset_type_name, asset_oid)
