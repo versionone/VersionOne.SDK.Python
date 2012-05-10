@@ -51,7 +51,8 @@ class BaseAsset(object):
     else:
       self._v1_new_data[attr] = value
       self._v1_needs_commit = True
-     
+
+
   def _v1_commit(self):
     if self._v1_needs_commit:
       self._v1_v1meta_instance.update_asset(self._v1_asset_type_name, self._v1_oid, self._v1_new_data)
@@ -60,6 +61,9 @@ class BaseAsset(object):
   def _v1_refresh(self):
     self._v1_current_data = self._v1_v1meta_instance.read_asset(self._v1_asset_type_name, self._v1_oid)
     self._v1_needs_refresh = False
+    
+  def _v1_execute_operation(self, opname):
+    self._v1_v1meta_instance.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
 
 
     
@@ -98,30 +102,41 @@ class V1Meta(object):
       return self.get_current_moment_for_asset_type(asset_type_name)
     return keyfunc
     
-  @cached_by_keyfunc(make_moment_keyfunc_for_asset_type('AssetType'))
-  def describe_assettype(self, asset_type_name):
-    urlquery = { "Where": "Name='{0}'".format(asset_type_name) }
-    data = self.server.get_xml("/rest.v1/Data/AssetType", query=urlquery)
-    return self.create_asset_proxy_class(asset_type_name, data)
+  #@cached_by_keyfunc(make_moment_keyfunc_for_asset_type('AssetType'))
+  #def describe_assettype(self, asset_type_name):
+  #  urlquery = { "Where": "Name='{0}'".format(asset_type_name) }
+  #  data = self.server.get_xml("/rest.v1/Data/AssetType", query=urlquery)
+  #  return self.create_asset_proxy_class(asset_type_name, data)
     
   @cached_by_keyfunc(key_by_args_kw)
-  def create_asset_proxy_class(self, asset_type_name, xmldata):
-    new_asset_class = type(asset_type_name, (BaseAsset,), {
+  def create_asset_proxy_class(self, asset_type_name):
+    xmldata = self.server.get_meta_xml(asset_type_name)
+    class_members = {
         '_v1_v1meta_instance': self, 
         '_v1_asset_type_name': asset_type_name,
         '_v1_asset_type_xml': xmldata,
-        })
+        }
+          
+    for operation in xmldata.findall('Operation'):
+      opname = operation.get('name')
+      def operation_func(self):
+        self._v1_execute_operation(opname)
+      class_members[opname] = operation_func
+      
+    new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
-    # TODO add methods for operations
     
   def get_current_moment_for_asset_type(self, asset_type_name):
     return '0'
     
   def run_query(self, query):
-    raise NotImplemented
+    raise NotImplementedError
     
   def update_asset(self, asset_type_name, asset_oid, newdata):
-    raise NotImplemented
+    raise NotImplementedError
+    
+  def execute_operation(self, asset_type_name, oid, opname):
+    return self.server.execute_operation(asset_type_name, oid, opname)
     
   def read_asset(self, asset_type_name, asset_oid):
     xml = self.server.get_asset_xml(asset_type_name, asset_oid)
@@ -135,13 +150,13 @@ class V1Meta(object):
     for relation in xml.findall('Relation'):
       key = relation.get('name')
       related_asset_elements = relation.findall('Asset')
-      output[key] = None
+      rellist = []
       for value_element in related_asset_elements:
         relation_idref = value_element.get('idref')
         reltype, relid = relation_idref.split(':')
-        valueclass = self.create_asset_proxy_class(reltype, None)
+        valueclass = self.create_asset_proxy_class(reltype)
         value = valueclass.find_by_id(relid)        
-        output[key] = value
-        
+        rellist.append(value)
+      output[key] = rellist
     return output
 
