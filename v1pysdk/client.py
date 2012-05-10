@@ -12,6 +12,7 @@ from elementtree import ElementTree
 
 def http_get(url, username='', password=''):
   "Do an HTTP Get with optional Basic authorization"
+  print url
   request = Request(url)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
@@ -81,8 +82,7 @@ class V1Server(object):
   def get_query_xml(self, asset_type_name, where):
     path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
     whereclause = urlencode({"Where": where})
-    path = path + '?' + whereclause
-    return self.get_xml(path)
+    return self.get_xml(path, query=whereclause)
     
   def get_meta_xml(self, asset_type_name):
     path = '/meta.v1/{0}'.format(asset_type_name)
