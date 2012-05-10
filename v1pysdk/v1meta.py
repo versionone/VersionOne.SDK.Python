@@ -119,8 +119,8 @@ class V1Meta(object):
           
     for operation in xmldata.findall('Operation'):
       opname = operation.get('name')
-      def operation_func(self):
-        self._v1_execute_operation(opname)
+      def operation_func(self, opname2=opname):
+        self._v1_execute_operation(opname2)
       class_members[opname] = operation_func
       
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
