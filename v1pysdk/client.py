@@ -12,7 +12,6 @@ from elementtree import ElementTree
 
 def http_get(url, username='', password=''):
   "Do an HTTP Get with optional Basic authorization"
-  print url
   request = Request(url)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
@@ -71,7 +70,7 @@ class V1Server(object):
       if exception.code == '404':
         raise V1AssetNotFoundError(exception)
       else:
-        ElementTree.dump(exception.xmldoc)
+        #ElementTree.dump(exception.xmldoc)
         raise V1Error(exception)
     return document
    
@@ -91,7 +90,50 @@ class V1Server(object):
   def execute_operation(self, asset_type_name, oid, opname):
     path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     query = {'op': opname}
-    return self.get_xml(path, query=query, postdata={})        
+    return self.get_xml(path, query=query, postdata={})
+    
+  def update_asset(self, asset_type_name, oid, newdata):
+    """
+    
+    {'Attribute1': 'AttributeValue',
+     'Relation1': OtherAssetClassInstance,
+     'MVR1': [OtherAssetClassInstance, ...],
+     }
+     ->
+     <Asset name="Story">
+     
+       <Attribute name="Attribute1" act="set">AttributeValue</Attribute>
+       
+       <Relation name="Relation1" act="set">
+         <Asset idref="Whatever:1245" />
+       </Relation>
+       
+       <Relation name="MVR1">
+         <Asset idref="Whatever:0001" act="set" />
+       </Relation>
+       
+     </Asset>
+     """
+     
+    for delta in deltalist:
+      op = delta[0]
+      if op == 'DELETE_ATTR_VAL':
+        element("Attribute").attribute("name", delta.attrname).attribute("act", "set")
+        pass
+      if op == 'UPDATE_ATTR_VAL':
+        pass
+      if op == 'ADD_SINGLE_RELATION':
+        pass
+      if op == 'REMOVE_SINGLE_RELATION':
+        pass
+      if op == 'ADD_MULTIPLE_RELATION':
+        pass
+      if op == 'REMOVE_MULTIPLE_RELATION':
+        pass
+      
+    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    return self.get_xml(path, query=query, postdata=newdata)
+    
     
 
       
