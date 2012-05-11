@@ -24,6 +24,7 @@ class BaseAsset(object):
 
   @classmethod
   def find_by_id(Class, asset_id):
+    'Takes an asset id (e.g. "1004") and returns the (possibly old) instance representing it'
     cache_key = (Class._v1_asset_type_name, asset_id)
     cache = Class._v1_v1meta_instance.global_cache
     if cache.has_key(cache_key):
@@ -34,6 +35,7 @@ class BaseAsset(object):
     
   @classmethod
   def query(Class, wherestr):
+    'Takes a V1 Data query string and returns an iterable of all matching items'
     match = Class._v1_v1meta_instance.query(Class._v1_asset_type_name, wherestr)
     for asset in match.findall('Asset'):
       idref = asset.get('id')
@@ -42,15 +44,22 @@ class BaseAsset(object):
       assetinstance = assetClass(relid)
       yield assetinstance
       
+  @classmethod
+  def create(Class, newdata):
+    create_response = class._v1_v1meta_instance.create_asset(Class._v1_asset_type_name, newdata)
+    new_oid = create_response.find('Asset').get('idref')
+    return Class._v1_v1meta_instance.asset_from_oid(new_oid)
       
-
   def __init__(self, oid):
+    'Takes an asset id and always instantiates a new asset instance'
     self._v1_oid = oid
     self._v1_new_data = {}
     self._v1_current_data = {}
     self._v1_needs_refresh = True
 
   def __getattr__(self, attr):
+    'Syncs up the object if needed, and preferentially returns any pending data. '
+    'else returns the data read from the server at last sync.'
     if self._v1_needs_refresh:
       self._v1_refresh()
     if self._v1_new_data.has_key(attr):
@@ -64,6 +73,7 @@ class BaseAsset(object):
     return value
     
   def __setattr__(self, attr, value):
+    'Stores a new value for later commit'
     if attr.startswith('_v1_'):
       object.__setattr__(self, attr, value)
     else:
@@ -72,11 +82,13 @@ class BaseAsset(object):
 
 
   def _v1_commit(self):
+    'Commits the object to the server and invalidates its sync state'
     if self._v1_needs_commit:
       self._v1_v1meta_instance.update_asset(self._v1_asset_type_name, self._v1_oid, self._v1_new_data)
     self._v1_needs_refresh = True
     
   def _v1_refresh(self):
+    'Syncs the objects from current server data'
     self._v1_current_data = self._v1_v1meta_instance.read_asset(self._v1_asset_type_name, self._v1_oid)
     self._v1_needs_refresh = False
     
@@ -88,6 +100,8 @@ class BaseAsset(object):
 
 
 def key_by_args_kw(old_f, args, kw, cache_data):
+  'Function to build a cache key for the cached_by_keyfunc decorator. '
+  'This one just caches based on the function call arguments. i.e. Memoize '
   return (args, kw)
 
 
@@ -107,18 +121,33 @@ def cached_by_keyfunc(keyfunc):
   return decorator
 
 
+import iso8601
 
-
-class V1Meta(object):
+class V1Meta(object):    
+  #type_converters = dict(
+  #  Numeric = float,
+  #  Date = iso8601.parse_date,
+  #  Duration = str,
+  #  Text = str,
+  #  LongText = str,
+  #  Relation = str,
+  #  Rank = str,
+  #  AssetType = str,
+  #  Opaque = str,
+  #  State = int,
+  #  Password = str,
+  #  Blob = str,
+  #)
+    
   def __init__(self, username='admin', password='admin'):
     self.server = V1Server(username=username, password=password)
     self.global_cache = {}
     
-  def make_moment_keyfunc_for_asset_type(asset_type_name):
-    def keyfunc(old_f, args, kw, data):
-      self = args[0]
-      return self.get_current_moment_for_asset_type(asset_type_name)
-    return keyfunc
+  #def make_moment_keyfunc_for_asset_type(asset_type_name):
+  #  def keyfunc(old_f, args, kw, data):
+  #    self = args[0]
+  #    return self.get_current_moment_for_asset_type(asset_type_name)
+  #  return keyfunc
     
   #@cached_by_keyfunc(make_moment_keyfunc_for_asset_type('AssetType'))
   #def describe_assettype(self, asset_type_name):
@@ -144,11 +173,8 @@ class V1Meta(object):
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
     
-  def get_current_moment_for_asset_type(self, asset_type_name):
-    return '0'
-    
-  def run_query(self, query):
-    raise NotImplementedError
+  #def get_current_moment_for_asset_type(self, asset_type_name):
+  #  return '0'
     
   def update_asset(self, asset_type_name, asset_oid, newdata):
     raise NotImplementedError
@@ -162,7 +188,6 @@ class V1Meta(object):
   def read_asset(self, asset_type_name, asset_oid):
     xml = self.server.get_asset_xml(asset_type_name, asset_oid)
     output = {}
-    
     for attribute in xml.findall('Attribute'):
       key = attribute.get('name').replace('.','_')
       value = attribute.text
@@ -174,10 +199,18 @@ class V1Meta(object):
       rellist = []
       for value_element in related_asset_elements:
         relation_idref = value_element.get('idref')
-        reltype, relid = relation_idref.split(':')
-        valueclass = self.asset_class(reltype)
-        value = valueclass.find_by_id(relid)        
+        value = self.asset_from_oid(relation_idref)
         rellist.append(value)
       output[key] = rellist
     return output
+    
+  def asset_from_oid(self, oidtoken):
+    asset_type, asset_id = oidtoken.split(':')
+    AssetClass = self.asset_class(asset_type)
+    instance = AssetClass.find_by_id(asset_id)
+    return instance
+    
+    
+
+    
 
