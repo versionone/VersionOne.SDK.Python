@@ -26,7 +26,7 @@ class BaseAsset(object):
   def find_by_id(Class, asset_id):
     'Takes an asset id (e.g. "1004") and returns the (possibly old) instance representing it'
     cache_key = (Class._v1_asset_type_name, asset_id)
-    cache = Class._v1_v1meta_instance.global_cache
+    cache = Class._v1_v1meta.global_cache
     if cache.has_key(cache_key):
       return cache[cache_key]
     new_asset_instance = Class(asset_id)
@@ -34,21 +34,18 @@ class BaseAsset(object):
     return new_asset_instance
     
   @classmethod
-  def query(Class, wherestr):
+  def query(Class, where=''):
     'Takes a V1 Data query string and returns an iterable of all matching items'
-    match = Class._v1_v1meta_instance.query(Class._v1_asset_type_name, wherestr)
+    match = Class._v1_v1meta.query(Class._v1_asset_type_name, where)
     for asset in match.findall('Asset'):
       idref = asset.get('id')
-      reltype, relid = idref.split(':')
-      assetClass = Class._v1_v1meta_instance.asset_class(reltype)
-      assetinstance = assetClass(relid)
-      yield assetinstance
-      
+      yield Class._v1_v1meta.asset_from_oid(idref)
+
   @classmethod
   def create(Class, newdata):
-    create_response = Class._v1_v1meta_instance.create_asset(Class._v1_asset_type_name, newdata)
+    create_response = Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
     new_oid = create_response.find('Asset').get('idref')
-    return Class._v1_v1meta_instance.asset_from_oid(new_oid)
+    return Class._v1_v1meta.asset_from_oid(new_oid)
       
   def __init__(self, oid):
     'Takes an asset id and always instantiates a new asset instance'
@@ -84,16 +81,16 @@ class BaseAsset(object):
   def _v1_commit(self):
     'Commits the object to the server and invalidates its sync state'
     if self._v1_needs_commit:
-      self._v1_v1meta_instance.update_asset(self._v1_asset_type_name, self._v1_oid, self._v1_new_data)
+      self._v1_v1meta.update_asset(self._v1_asset_type_name, self._v1_oid, self._v1_new_data)
     self._v1_needs_refresh = True
     
   def _v1_refresh(self):
     'Syncs the objects from current server data'
-    self._v1_current_data = self._v1_v1meta_instance.read_asset(self._v1_asset_type_name, self._v1_oid)
+    self._v1_current_data = self._v1_v1meta.read_asset(self._v1_asset_type_name, self._v1_oid)
     self._v1_needs_refresh = False
     
   def _v1_execute_operation(self, opname):
-    self._v1_v1meta_instance.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
+    self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
 
 
     
@@ -160,7 +157,7 @@ class V1Meta(object):
     xmldata = self.server.get_meta_xml(asset_type_name)
     mvrs = [attrdef.get('name') for attrdef in  xmldata.findall('AttributeDefinition') if attrdef.get('ismultivalue') == 'True']
     class_members = {
-        '_v1_v1meta_instance': self, 
+        '_v1_v1meta': self, 
         '_v1_asset_type_name': asset_type_name,
         '_v1_asset_type_xml': xmldata,
         '_v1_multi_valued_relations': mvrs,
