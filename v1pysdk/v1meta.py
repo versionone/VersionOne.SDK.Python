@@ -46,7 +46,7 @@ class BaseAsset(object):
       
   @classmethod
   def create(Class, newdata):
-    create_response = class._v1_v1meta_instance.create_asset(Class._v1_asset_type_name, newdata)
+    create_response = Class._v1_v1meta_instance.create_asset(Class._v1_asset_type_name, newdata)
     new_oid = create_response.find('Asset').get('idref')
     return Class._v1_v1meta_instance.asset_from_oid(new_oid)
       
