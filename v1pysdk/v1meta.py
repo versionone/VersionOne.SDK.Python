@@ -140,6 +140,11 @@ class V1Meta(object):
     self.server = V1Server(username=username, password=password)
     self.global_cache = {}
     
+  def __getattr__(self, attr):
+    "Dynamically build asset type classes when someone tries to get attrs "
+    "that we don't have."
+    return self.asset_class(attr)
+    
   #def make_moment_keyfunc_for_asset_type(asset_type_name):
   #  def keyfunc(old_f, args, kw, data):
   #    self = args[0]
