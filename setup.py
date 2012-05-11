@@ -21,6 +21,7 @@ setup(
   install_requires = [
     'elementtree',
     'testtools',
+    'iso8601',
     ],
     
   test_suite = "v1pysdk.tests",
