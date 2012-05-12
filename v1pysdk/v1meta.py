@@ -94,19 +94,15 @@ class BaseAsset(object):
     cache = Class._v1_v1meta.global_cache
     if cache.has_key(cache_key):
       return cache[cache_key]
-    new_asset_instance = object.__new__(Class)
-    new_asset_instance._v1_constructed = False
-    cache[cache_key] = new_asset_instance
-    return new_asset_instance
-  
-  def __init__(self, oid):
-    'Initializes an asset instance if not pulled from cache'
-    if not self._v1_constructed:
-      self._v1_oid = oid
-      self._v1_new_data = {}
-      self._v1_current_data = {}
-      self._v1_needs_refresh = True
-      self._v1_constructed = True
+    self = object.__new__(Class)
+    self._v1_constructed = False
+    self._v1_oid = oid
+    self._v1_new_data = {}
+    self._v1_current_data = {}
+    self._v1_needs_refresh = True
+    self._v1_constructed = True
+    cache[cache_key] = self
+    return self
     
   def with_data(self, newdata):
     "bulk-set instance data"
