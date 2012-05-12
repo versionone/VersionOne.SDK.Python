@@ -191,6 +191,7 @@ import iso8601
 
 class V1Meta(object):    
   #type_converters = dict(
+  #  Boolean = bool
   #  Numeric = float,
   #  Date = iso8601.parse_date,
   #  Duration = str,
