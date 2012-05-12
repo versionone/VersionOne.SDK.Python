@@ -37,6 +37,7 @@ class V1Query(object):
       url_params['where'] = ';'.join("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
     urlquery = urlencode(url_params)    
     urlpath = '/rest-1.v1/Data/{0}'.format(self.asset_class._v1_asset_type_name)
+    # warning: tight coupling ahead
     xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
     return xml
     
@@ -108,7 +109,8 @@ class BaseAsset(object):
       self._v1_constructed = True
     
   def with_data(self, newdata):
-    self._v1_current_data = dict(newdata)
+    "bulk-set instance data"
+    self._v1_current_data.update(dict(newdata))
     self._v1_needs_commit = False
     return self
 
@@ -145,7 +147,6 @@ class BaseAsset(object):
     else:
       self._v1_new_data[attr] = value
       self._v1_needs_commit = True
-
 
   def _v1_commit(self):
     'Commits the object to the server and invalidates its sync state'
@@ -190,25 +191,10 @@ def cached_by_keyfunc(keyfunc):
   return decorator
 
 
-import iso8601
 
-class V1Meta(object):    
-  #type_converters = dict(
-  #  Boolean = bool
-  #  Numeric = float,
-  #  Date = iso8601.parse_date,
-  #  Duration = str,
-  #  Text = str,
-  #  LongText = str,
-  #  Relation = str,
-  #  Rank = str,
-  #  AssetType = str,
-  #  Opaque = str,
-  #  State = int,
-  #  Password = str,
-  #  Blob = str,
-  #)
-    
+
+
+class V1Meta(object):        
   def __init__(self, username='admin', password='admin'):
     self.server = V1Server(username=username, password=password)
     self.global_cache = {}
@@ -217,18 +203,6 @@ class V1Meta(object):
     "Dynamically build asset type classes when someone tries to get attrs "
     "that we don't have."
     return self.asset_class(attr)
-    
-  #def make_moment_keyfunc_for_asset_type(asset_type_name):
-  #  def keyfunc(old_f, args, kw, data):
-  #    self = args[0]
-  #    return self.get_current_moment_for_asset_type(asset_type_name)
-  #  return keyfunc
-    
-  #@cached_by_keyfunc(make_moment_keyfunc_for_asset_type('AssetType'))
-  #def describe_assettype(self, asset_type_name):
-  #  urlquery = { "Where": "Name='{0}'".format(asset_type_name) }
-  #  data = self.server.get_xml("/rest.v1/Data/AssetType", query=urlquery)
-  #  return self.create_asset_proxy_class(asset_type_name, data)
     
   @cached_by_keyfunc(key_by_args_kw)
   def asset_class(self, asset_type_name):
@@ -252,9 +226,6 @@ class V1Meta(object):
       class_members[opname] = operation_func
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
-    
-  #def get_current_moment_for_asset_type(self, asset_type_name):
-  #  return '0'
     
   def update_asset(self, asset_type_name, asset_oid, newdata):
     raise NotImplementedError
@@ -297,7 +268,18 @@ class V1Meta(object):
     instance = AssetClass(asset_id)
     return instance
     
-    
-
-    
-
+  #type_converters = dict(
+  #  Boolean = bool
+  #  Numeric = float,
+  #  Date = iso8601.parse_date,
+  #  Duration = str,
+  #  Text = str,
+  #  LongText = str,
+  #  Relation = str,
+  #  Rank = str,
+  #  AssetType = str,
+  #  Opaque = str,
+  #  State = int,
+  #  Password = str,
+  #  Blob = str,
+  #)
