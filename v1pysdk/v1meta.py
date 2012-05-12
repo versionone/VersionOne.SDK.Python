@@ -53,6 +53,9 @@ class BaseAsset(object):
     self._v1_current_data = {}
     self._v1_needs_refresh = True
 
+  def __repr__(self):
+    return "{0}({1}) # current={2} pending={3}".format(self._v1_asset_type_name, self._v1_oid, self._v1_current_data, self._v1_new_data)
+
   def __getattr__(self, attr):
     'Syncs up the object if needed, and preferentially returns any pending data. '
     'else returns the data read from the server at last sync.'
