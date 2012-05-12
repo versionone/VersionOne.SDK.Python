@@ -92,6 +92,10 @@ class V1Server(object):
     query = {'op': opname}
     return self.get_xml(path, query=query, postdata={})
     
+  def get_attr(self, asset_type_name, oid, attrname):
+    path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
+    return self.get_xml(path)
+    
   def update_asset(self, asset_type_name, oid, newdata):
     """
     
