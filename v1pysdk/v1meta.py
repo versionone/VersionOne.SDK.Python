@@ -1,4 +1,3 @@
-
 from client import *
 
 
@@ -61,7 +60,8 @@ class BaseAsset(object):
       self._v1_refresh()
     if self._v1_new_data.has_key(attr):
       value = self._v1_new_data[attr]
-    value = self._v1_current_data[attr]
+    else:
+      value = self._v1_current_data[attr]
     if isinstance(value, list) and attr not in self._v1_multi_valued_relations:
       if value:
         value = value[0]
