@@ -159,7 +159,7 @@ class BaseAsset(object):
     return self._v1_v1meta.get_attr(self._v1_asset_type_name, self._v1_oid, attr)
     
   def _v1_execute_operation(self, opname):
-    self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
+    return self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
 
 
     
