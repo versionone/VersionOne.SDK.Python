@@ -53,21 +53,8 @@ class V1Query(object):
 
 
 class BaseAsset(object):
-  """
-     Provides common methods for the dynamically derived asset type classes
-     built by V1Meta.asset_class
-  """
-
-  @classmethod
-  def find_by_id(Class, asset_id):
-    'Takes an asset id (e.g. "1004") and returns the (possibly old) instance representing it'
-    cache_key = (Class._v1_asset_type_name, asset_id)
-    cache = Class._v1_v1meta.global_cache
-    if cache.has_key(cache_key):
-      return cache[cache_key]
-    new_asset_instance = Class(asset_id)
-    cache[cache_key] = new_asset_instance
-    return new_asset_instance
+  """Provides common methods for the dynamically derived asset type classes
+     built by V1Meta.asset_class"""
     
   @classmethod
   def query(Class, where=''):
@@ -87,23 +74,38 @@ class BaseAsset(object):
 
   @classmethod
   def from_query_select(Class, xml):
+    "Find or instantiate an object and fill it with data that just came back from query"
     asset_type, oid = xml.get('id').split(':')
-    instance = Class.find_by_id(oid)   
+    instance = Class(oid)   
     data = Class._v1_v1meta.unpack_asset(xml)
     return instance.with_data(data)
 
   @classmethod
   def create(Class, newdata):
+    "create new asset on server and return created asset proxy instance"
     create_response = Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
     new_oid = create_response.find('Asset').get('idref')
     return Class._v1_v1meta.asset_from_oid(new_oid)
       
+  def __new__(Class, oid):
+    "Tries to get an instance out of the cache first, otherwise creates one"
+    cache_key = (Class._v1_asset_type_name, int(oid))
+    cache = Class._v1_v1meta.global_cache
+    if cache.has_key(cache_key):
+      return cache[cache_key]
+    new_asset_instance = object.__new__(Class)
+    new_asset_instance._v1_constructed = False
+    cache[cache_key] = new_asset_instance
+    return new_asset_instance
+  
   def __init__(self, oid):
-    'Takes an asset id and always instantiates a new asset instance'
-    self._v1_oid = oid
-    self._v1_new_data = {}
-    self._v1_current_data = {}
-    self._v1_needs_refresh = True
+    'Initializes an asset instance if not pulled from cache'
+    if not self._v1_constructed:
+      self._v1_oid = oid
+      self._v1_new_data = {}
+      self._v1_current_data = {}
+      self._v1_needs_refresh = True
+      self._v1_constructed = True
     
   def with_data(self, newdata):
     self._v1_current_data = dict(newdata)
@@ -111,6 +113,7 @@ class BaseAsset(object):
     return self
 
   def __repr__(self):
+    "produce string representation"
     out = "{0}({1})".format(self._v1_asset_type_name, self._v1_oid)
     if self._v1_current_data:
       out += '.with_data({0})'.format(self._v1_current_data)
@@ -291,7 +294,7 @@ class V1Meta(object):
   def asset_from_oid(self, oidtoken):
     asset_type, asset_id = oidtoken.split(':')
     AssetClass = self.asset_class(asset_type)
-    instance = AssetClass.find_by_id(asset_id)
+    instance = AssetClass(asset_id)
     return instance
     
     
