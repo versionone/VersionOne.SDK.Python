@@ -229,12 +229,17 @@ class V1Meta(object):
   @cached_by_keyfunc(key_by_args_kw)
   def asset_class(self, asset_type_name):
     xmldata = self.server.get_meta_xml(asset_type_name)
-    mvrs = [attrdef.get('name') for attrdef in  xmldata.findall('AttributeDefinition') if attrdef.get('ismultivalue') == 'True']
+    attrdefs = xmldata.findall('AttributeDefinition')
+    attrnames = [attrdef.get('name') for attrdef in attrdefs]
+    #basicattrs = [attrdef.get('name') for attrdef in attrdefs if attrdef.get('isbasic') == 'True']
+    mvrs = [attrdef.get('name') for attrdef in attrdefs if attrdef.get('ismultivalue') == 'True']
     class_members = {
         '_v1_v1meta': self, 
         '_v1_asset_type_name': asset_type_name,
         '_v1_asset_type_xml': xmldata,
         '_v1_multi_valued_relations': mvrs,
+        '_v1_attrnames': attrnames,
+        #'_v1_basicattrs': basicattrs,
         }
     for operation in xmldata.findall('Operation'):
       opname = operation.get('name')
