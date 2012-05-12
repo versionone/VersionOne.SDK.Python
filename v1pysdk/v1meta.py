@@ -155,6 +155,9 @@ class BaseAsset(object):
     self._v1_current_data = self._v1_v1meta.read_asset(self._v1_asset_type_name, self._v1_oid)
     self._v1_needs_refresh = False
     
+  def _v1_get_single_attr(self, attr):
+    return self._v1_v1meta.get_attr(self._v1_asset_type_name, self._v1_oid, attr)
+    
   def _v1_execute_operation(self, opname):
     self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
 
@@ -249,6 +252,10 @@ class V1Meta(object):
     
   def execute_operation(self, asset_type_name, oid, opname):
     return self.server.execute_operation(asset_type_name, oid, opname)
+    
+  def get_attr(self, asset_type_name, oid, attrname):
+    xml = self.server.get_attr(asset_type_name, oid, attrname)
+    return xml.text
     
   def query(self, asset_type_name, wherestring):
     return self.server.get_query_xml(asset_type_name, wherestring)
