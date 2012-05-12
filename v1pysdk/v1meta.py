@@ -104,18 +104,29 @@ class BaseAsset(object):
     self._v1_new_data = {}
     self._v1_current_data = {}
     self._v1_needs_refresh = True
+    
+  def with_data(self, newdata):
+    self._v1_current_data = dict(newdata)
+    self._v1_needs_commit = False
+    return self
 
   def __repr__(self):
-    return "{0}({1}) # current={2} pending={3}".format(self._v1_asset_type_name, self._v1_oid, self._v1_current_data, self._v1_new_data)
-
+    out = "{0}({1})".format(self._v1_asset_type_name, self._v1_oid)
+    if self._v1_current_data:
+      out += '.with_data({0})'.format(self._v1_current_data)
+    if self._v1_new_data:
+      out += '.with_data({0})'.format(self._v1_new_data)
+    return out
+    
   def __getattr__(self, attr):
-    'Syncs up the object if needed, and preferentially returns any pending data. '
-    'else returns the data read from the server at last sync.'
-    if self._v1_needs_refresh:
-      self._v1_refresh()
+    "first return uncommitted data, then refresh if needed, then get single attr, else fail"
     if self._v1_new_data.has_key(attr):
       value = self._v1_new_data[attr]
     else:
+      if self._v1_needs_refresh: # and attr in self._v1_basicattrs
+        self._v1_refresh()
+      if attr in self._v1_attrnames and attr not in self._v1_current_data.keys():
+        self._v1_current_data[attr] = self._v1_get_single_attr(attr)
       value = self._v1_current_data[attr]
     if isinstance(value, list) and attr not in self._v1_multi_valued_relations:
       if value:
