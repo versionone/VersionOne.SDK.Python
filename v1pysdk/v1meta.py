@@ -262,6 +262,9 @@ class V1Meta(object):
     
   def read_asset(self, asset_type_name, asset_oid):
     xml = self.server.get_asset_xml(asset_type_name, asset_oid)
+    return self.unpack_asset(xml)
+    
+  def unpack_asset(self, xml):
     output = {}
     for attribute in xml.findall('Attribute'):
       key = attribute.get('name').replace('.','_')
