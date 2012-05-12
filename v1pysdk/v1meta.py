@@ -14,6 +14,43 @@ the cached moment, or else you lost.
 """
 
 
+class V1Query(object):
+  def __init__(self, asset_class):
+    self.asset_class = asset_class
+    self.where_terms = {}
+    self.sel_list = []
+    self.query_has_run = False
+    
+  def __iter__(self):
+    if not self.query_has_run:
+      self.query_results = self.run_query()
+      self.query_has_run = True
+    for found_asset in self.query_results.findall('Asset'):
+      idref = found_asset.get('id')
+      yield self.asset_class.from_query_select(found_asset)
+      
+  def run_query(self):
+    url_params = {}
+    if self.sel_list:
+      url_params['sel'] = ','.join(self.sel_list)
+    if self.where_terms:
+      url_params['where'] = ';'.join("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
+    urlquery = urlencode(url_params)    
+    urlpath = '/rest-1.v1/Data/{0}'.format(self.asset_class._v1_asset_type_name)
+    xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
+    return xml
+    
+  def select(self, *args, **kw):
+    self.sel_list.extend(args)
+    return self
+    
+  def where(self, *args, **kw):
+    self.where_terms.update(kw)
+    return self
+
+
+
+
 
 class BaseAsset(object):
   """
@@ -39,6 +76,21 @@ class BaseAsset(object):
     for asset in match.findall('Asset'):
       idref = asset.get('id')
       yield Class._v1_v1meta.asset_from_oid(idref)
+
+  @classmethod
+  def select(Class, *selectlist):
+    return V1Query(Class).select(*selectlist)
+  
+  @classmethod
+  def where(Class, **wherekw):
+    return V1Query(Class).where(**wherekw)
+
+  @classmethod
+  def from_query_select(Class, xml):
+    asset_type, oid = xml.get('id').split(':')
+    instance = Class.find_by_id(oid)   
+    data = Class._v1_v1meta.unpack_asset(xml)
+    return instance.with_data(data)
 
   @classmethod
   def create(Class, newdata):
