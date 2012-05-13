@@ -93,22 +93,19 @@ class BaseAsset(object):
     cache_key = (Class._v1_asset_type_name, int(oid))
     cache = Class._v1_v1meta.global_cache
     if cache.has_key(cache_key):
-      return cache[cache_key]
-    self = object.__new__(Class)
-    self._v1_constructed = False
-    self._v1_oid = oid
-    self._v1_new_data = {}
-    self._v1_current_data = {}
-    self._v1_needs_refresh = True
-    self._v1_constructed = True
-    cache[cache_key] = self
+      self = cache[cache_key]
+    else:
+      self = object.__new__(Class)
+      self._v1_oid = oid
+      self._v1_new_data = {}
+      self._v1_current_data = {}
+      self._v1_needs_refresh = True
+      cache[cache_key] = self
     return self
-    
-  def with_data(self, newdata):
-    "bulk-set instance data"
-    self._v1_current_data.update(dict(newdata))
-    self._v1_needs_commit = False
-    return self
+
+  @property
+  def idref(self):
+    return self._v1_asset_type + ':' + self._v1_oid
 
   def __repr__(self):
     "produce string representation"
@@ -116,27 +113,23 @@ class BaseAsset(object):
     if self._v1_current_data:
       out += '.with_data({0})'.format(self._v1_current_data)
     if self._v1_new_data:
-      out += '.with_data({0})'.format(self._v1_new_data)
+      out += '.pending({0})'.format(self._v1_new_data)
     return out
     
-  def __getattr__(self, attr):
+  def _v1_getattr(self, attr):
+    "Intercept access to missing attribute names. "
     "first return uncommitted data, then refresh if needed, then get single attr, else fail"
     if self._v1_new_data.has_key(attr):
       value = self._v1_new_data[attr]
     else:
       if self._v1_needs_refresh: # and attr in self._v1_basicattrs
         self._v1_refresh()
-      if attr in self._v1_attrnames and attr not in self._v1_current_data.keys():
+      if attr not in self._v1_current_data.keys():
         self._v1_current_data[attr] = self._v1_get_single_attr(attr)
       value = self._v1_current_data[attr]
-    if isinstance(value, list) and attr not in self._v1_multi_valued_relations:
-      if value:
-        value = value[0]
-      else:
-        value = None
     return value
     
-  def __setattr__(self, attr, value):
+  def _v1_setattr(self, attr, value):
     'Stores a new value for later commit'
     if attr.startswith('_v1_'):
       object.__setattr__(self, attr, value)
@@ -144,14 +137,21 @@ class BaseAsset(object):
       self._v1_new_data[attr] = value
       self._v1_needs_commit = True
 
+  def with_data(self, newdata):
+    "bulk-set instance data"
+    self._v1_current_data.update(dict(newdata))
+    self._v1_needs_refresh = False
+    return self
     
   def pending(self, newdata):
     self._v1_new_data.update(dict(newdata))
     self._v1_needs_commit = True
+
   def _v1_commit(self):
     'Commits the object to the server and invalidates its sync state'
     if self._v1_needs_commit:
       self._v1_v1meta.update_asset(self._v1_asset_type_name, self._v1_oid, self._v1_new_data)
+      self._v1_needs_commit = False
     self._v1_needs_refresh = True
     
   def _v1_refresh(self):
@@ -163,7 +163,9 @@ class BaseAsset(object):
     return self._v1_v1meta.get_attr(self._v1_asset_type_name, self._v1_oid, attr)
     
   def _v1_execute_operation(self, opname):
+    self._v1_needs_refresh = True
     return self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
+    
 
 
     
@@ -207,17 +209,10 @@ class V1Meta(object):
   @cached_by_keyfunc(key_by_args_kw)
   def asset_class(self, asset_type_name):
     xmldata = self.server.get_meta_xml(asset_type_name)
-    attrdefs = xmldata.findall('AttributeDefinition')
-    attrnames = [attrdef.get('name') for attrdef in attrdefs]
-    #basicattrs = [attrdef.get('name') for attrdef in attrdefs if attrdef.get('isbasic') == 'True']
-    mvrs = [attrdef.get('name') for attrdef in attrdefs if attrdef.get('ismultivalue') == 'True']
     class_members = {
         '_v1_v1meta': self, 
         '_v1_asset_type_name': asset_type_name,
         '_v1_asset_type_xml': xmldata,
-        '_v1_multi_valued_relations': mvrs,
-        '_v1_attrnames': attrnames,
-        #'_v1_basicattrs': basicattrs,
         }
     for operation in xmldata.findall('Operation'):
       opname = operation.get('name')
@@ -265,7 +260,9 @@ class V1Meta(object):
     
   def get_attr(self, asset_type_name, oid, attrname):
     xml = self.server.get_attr(asset_type_name, oid, attrname)
-    return xml.text
+    dummy_asset = ElementTree.Element('Asset')
+    dummy_asset.append(xml)
+    return self.unpack_asset(dummy_asset)[attrname]
     
   def query(self, asset_type_name, wherestring):
     return self.server.get_query_xml(asset_type_name, wherestring)
