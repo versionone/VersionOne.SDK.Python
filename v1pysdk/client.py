@@ -19,8 +19,8 @@ def http_get(url, username='', password=''):
   response = urlopen(request)
   return response
 
-def http_post(url, username='', password='', data={}):
-  request = Request(url, urlencode(data))
+def http_post(url, username='', password='', data=''):
+  request = Request(url, data)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
     request.add_header('Authorization', 'Basic ' + auth_string)
@@ -32,6 +32,8 @@ class V1Error(Exception): pass
 
 class V1AssetNotFoundError(V1Error): pass
 
+from elementtree import ElementTree
+from elementtree.ElementTree import Element
 
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
@@ -97,6 +99,32 @@ class V1Server(object):
     return self.get_xml(path)
     
   def update_asset(self, asset_type_name, oid, newdata):
+    update_doc = Element('Asset')
+    for attrname, newvalue in newdata.items():
+      if hasattr(newvalue, '_v1_v1meta'):
+        node = Element('Relation')
+        node.set('name', attrname)
+        node.set('act', 'set')
+        ra = Element('Asset')
+        ra.set('idref', newvalue.idref)
+        node.append(ra)
+      elif isinstance(newvalue, list):
+        node = Element('Relation')
+        node.set('name', attrname)
+        for item in newvalue:
+          child = Element('Asset')
+          child.set('idref', item.idref)
+          child.set('act', 'set')
+          node.append(child)
+      else:
+        node = Element('Attribute')
+        node.set('name', attrname)
+        node.set('act', 'set')
+        node.text = str(newvalue)
+      update_doc.append(node)
+    newdata = ElementTree.tostring(update_doc, encoding='utf-8')
+    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    return self.get_xml(path, postdata=newdata)
     """
     
     {'Attribute1': 'AttributeValue',
@@ -118,25 +146,7 @@ class V1Server(object):
        
      </Asset>
      """
-     
-    for delta in deltalist:
-      op = delta[0]
-      if op == 'DELETE_ATTR_VAL':
-        element("Attribute").attribute("name", delta.attrname).attribute("act", "set")
-        pass
-      if op == 'UPDATE_ATTR_VAL':
-        pass
-      if op == 'ADD_SINGLE_RELATION':
-        pass
-      if op == 'REMOVE_SINGLE_RELATION':
-        pass
-      if op == 'ADD_MULTIPLE_RELATION':
-        pass
-      if op == 'REMOVE_MULTIPLE_RELATION':
-        pass
-      
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
-    return self.get_xml(path, query=query, postdata=newdata)
+
     
     
 

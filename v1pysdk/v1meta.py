@@ -144,6 +144,10 @@ class BaseAsset(object):
       self._v1_new_data[attr] = value
       self._v1_needs_commit = True
 
+    
+  def pending(self, newdata):
+    self._v1_new_data.update(dict(newdata))
+    self._v1_needs_commit = True
   def _v1_commit(self):
     'Commits the object to the server and invalidates its sync state'
     if self._v1_needs_commit:
@@ -188,7 +192,7 @@ def cached_by_keyfunc(keyfunc):
 
 
 
-
+from elementtree import ElementTree
 
 class V1Meta(object):        
   def __init__(self, username='admin', password='admin'):
@@ -220,11 +224,41 @@ class V1Meta(object):
       def operation_func(self, opname2=opname):
         self._v1_execute_operation(opname2)
       class_members[opname] = operation_func
+
+    for attribute in xmldata.findall('AttributeDefinition'):
+      attr = attribute.get("name")
+      if attribute.get('attributetype') == 'Relation':
+        if attribute.get('ismultivalue') == 'True':
+          def getter(self, attr=attr):
+            return self._v1_getattr(attr)
+          def setter(self, value, attr=attr):
+            return self._v1_setattr(attr, value)
+          def deleter(self, attr=attr):
+            raise NotImplementedError
+        else:
+          def getter(self, attr=attr):
+            return self._v1_getattr(attr)[0]
+          def setter(self, value, attr=attr):
+            return self._v1_setattr(attr, [value])
+          def deleter(self, attr=attr):
+            raise NotImplementedError
+      else:
+          def getter(self, attr=attr):
+            return self._v1_getattr(attr)
+          def setter(self, value, attr=attr):
+            return self._v1_setattr(attr, value)
+          def deleter(self, attr=attr):
+            raise NotImplementedError
+            
+      class_members[attr] = property(getter, setter, deleter) 
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
     
-  def update_asset(self, asset_type_name, asset_oid, newdata):
+  def create_asset(self, asset_type_name, newdata):
     raise NotImplementedError
+    
+  def update_asset(self, asset_type_name, asset_oid, newdata):
+    return self.server.update_asset(asset_type_name, asset_oid, newdata)
     
   def execute_operation(self, asset_type_name, oid, opname):
     return self.server.execute_operation(asset_type_name, oid, opname)
