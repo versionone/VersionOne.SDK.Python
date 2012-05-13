@@ -1,18 +1,6 @@
 from client import *
 
 
-"""
-two-phase commit idea...
-On first query, get moment number and get all assets for query from HISTORY 
-at that moment. In other words, objects won't change over transaction.
-
-Collect changes to objects.
-
-Then something where you only update objects if their last moment was
-the cached moment, or else you lost. 
-
-"""
-
 
 class V1Query(object):
   def __init__(self, asset_class):
@@ -58,10 +46,6 @@ class V1Query(object):
       
       
         
-
-
-
-
 class BaseAsset(object):
   """Provides common methods for the dynamically derived asset type classes
      built by V1Meta.asset_class"""
@@ -91,10 +75,15 @@ class BaseAsset(object):
     return instance.with_data(data)
 
   @classmethod
-  def create(Class, *newdata):
+  def create(Class, **newdata):
     "create new asset on server and return created asset proxy instance"
     return Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
-      
+
+  class __metaclass__(type):
+    "provide a metaclass that knows how to be iterated over, so we can say list(v1.Story)"
+    def __iter__(Class):
+      return Class.query()
+  
   def __new__(Class, oid):
     "Tries to get an instance out of the cache first, otherwise creates one"
     cache_key = (Class._v1_asset_type_name, int(oid))
@@ -176,10 +165,6 @@ class BaseAsset(object):
   def _v1_execute_operation(self, opname):
     self._v1_needs_refresh = True
     return self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
-    
-
-
-    
 
 
 def key_by_args_kw(old_f, args, kw, cache_data):
@@ -202,7 +187,6 @@ def cached_by_keyfunc(keyfunc):
       return new_value
     return new_f
   return decorator
-
 
 
 from elementtree import ElementTree
