@@ -1,13 +1,12 @@
 
-
+import logging, time, base64
 from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode
-
-import logging, time, base64
-
 from urlparse import urlunparse
 
 from elementtree import ElementTree
+from elementtree.ElementTree import Element
+
 
 
 def http_get(url, username='', password=''):
@@ -31,9 +30,6 @@ def http_post(url, username='', password='', data=''):
 class V1Error(Exception): pass
 
 class V1AssetNotFoundError(V1Error): pass
-
-from elementtree import ElementTree
-from elementtree.ElementTree import Element
 
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
