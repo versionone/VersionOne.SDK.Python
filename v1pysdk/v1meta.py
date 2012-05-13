@@ -91,7 +91,7 @@ class BaseAsset(object):
     return instance.with_data(data)
 
   @classmethod
-  def create(Class, newdata):
+  def create(Class, *newdata):
     "create new asset on server and return created asset proxy instance"
     return Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
       
