@@ -161,7 +161,9 @@ class BaseAsset(object):
     if self._v1_needs_commit:
       self._v1_v1meta.update_asset(self._v1_asset_type_name, self._v1_oid, self._v1_new_data)
       self._v1_needs_commit = False
-    self._v1_needs_refresh = True
+      self._v1_new_data = {}
+      self._v1_current_data = {}
+      self._v1_needs_refresh = True
     
   def _v1_refresh(self):
     'Syncs the objects from current server data'
@@ -262,6 +264,11 @@ class V1Meta(object):
   def add_to_dirty_list(self, asset_instance):
     self.dirtylist.append(asset_instance)
     
+  def commit(self):
+    for asset in self.dirtylist:
+      asset._v1_commit()
+    self.dirtylist = []
+    
   def generate_update_doc(self, newdata):
     update_doc = Element('Asset')
     for attrname, newvalue in newdata.items():
@@ -296,7 +303,7 @@ class V1Meta(object):
     
   def update_asset(self, asset_type_name, asset_oid, newdata):
     update_doc = self.generate_update_doc(newdata)
-    return self.server.update_asset(asset_type_name, asset_oid, newdata)
+    return self.server.update_asset(asset_type_name, asset_oid, update_doc)
     
   def execute_operation(self, asset_type_name, oid, opname):
     return self.server.execute_operation(asset_type_name, oid, opname)
