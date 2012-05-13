@@ -23,8 +23,7 @@ class V1Query(object):
     
   def __iter__(self):
     if not self.query_has_run:
-      self.query_results = self.run_query()
-      self.query_has_run = True
+      self.run_query()
     for found_asset in self.query_results.findall('Asset'):
       idref = found_asset.get('id')
       yield self.asset_class.from_query_select(found_asset)
@@ -39,6 +38,8 @@ class V1Query(object):
     urlpath = '/rest-1.v1/Data/{0}'.format(self.asset_class._v1_asset_type_name)
     # warning: tight coupling ahead
     xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
+    self.query_results = xml
+    self.query_has_run = True
     return xml
     
   def select(self, *args, **kw):
@@ -48,7 +49,15 @@ class V1Query(object):
   def where(self, *args, **kw):
     self.where_terms.update(kw)
     return self
-
+    
+  def set(self, **updatelist):
+    if not self.query_has_run:
+      self.run_query()
+    for found_asset in self:
+      found_asset.pending(updatelist)
+      
+      
+        
 
 
 
@@ -84,9 +93,7 @@ class BaseAsset(object):
   @classmethod
   def create(Class, newdata):
     "create new asset on server and return created asset proxy instance"
-    create_response = Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
-    new_oid = create_response.find('Asset').get('idref')
-    return Class._v1_v1meta.asset_from_oid(new_oid)
+    return Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
       
   def __new__(Class, oid):
     "Tries to get an instance out of the cache first, otherwise creates one"
@@ -105,7 +112,7 @@ class BaseAsset(object):
 
   @property
   def idref(self):
-    return self._v1_asset_type + ':' + self._v1_oid
+    return self._v1_asset_type_name + ':' + str(self._v1_oid)
 
   def __repr__(self):
     "produce string representation"
@@ -135,6 +142,7 @@ class BaseAsset(object):
       object.__setattr__(self, attr, value)
     else:
       self._v1_new_data[attr] = value
+      self._v1_v1meta.add_to_dirty_list(self)
       self._v1_needs_commit = True
 
   def with_data(self, newdata):
@@ -145,6 +153,7 @@ class BaseAsset(object):
     
   def pending(self, newdata):
     self._v1_new_data.update(dict(newdata))
+    self._v1_v1meta.add_to_dirty_list(self)
     self._v1_needs_commit = True
 
   def _v1_commit(self):
@@ -200,6 +209,7 @@ class V1Meta(object):
   def __init__(self, username='admin', password='admin'):
     self.server = V1Server(username=username, password=password)
     self.global_cache = {}
+    self.dirtylist = []
     
   def __getattr__(self, attr):
     "Dynamically build asset type classes when someone tries to get attrs "
@@ -249,10 +259,43 @@ class V1Meta(object):
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
     
+  def add_to_dirty_list(self, asset_instance):
+    self.dirtylist.append(asset_instance)
+    
+  def generate_update_doc(self, newdata):
+    update_doc = Element('Asset')
+    for attrname, newvalue in newdata.items():
+      if hasattr(newvalue, '_v1_v1meta'):
+        node = Element('Relation')
+        node.set('name', attrname)
+        node.set('act', 'set')
+        ra = Element('Asset')
+        ra.set('idref', newvalue.idref)
+        node.append(ra)
+      elif isinstance(newvalue, list):
+        node = Element('Relation')
+        node.set('name', attrname)
+        for item in newvalue:
+          child = Element('Asset')
+          child.set('idref', item.idref)
+          child.set('act', 'set')
+          node.append(child)
+      else:
+        node = Element('Attribute')
+        node.set('name', attrname)
+        node.set('act', 'set')
+        node.text = str(newvalue)
+      update_doc.append(node)
+    return update_doc
+    
   def create_asset(self, asset_type_name, newdata):
-    raise NotImplementedError
+    update_doc = self.generate_update_doc(newdata)
+    new_asset_xml = self.server.create_asset(asset_type_name,  update_doc)
+    asset_type, asset_oid, asset_moment = new_asset_xml.get('id').split(':')
+    return self.asset_class(asset_type)(asset_oid)
     
   def update_asset(self, asset_type_name, asset_oid, newdata):
+    update_doc = self.generate_update_doc(newdata)
     return self.server.update_asset(asset_type_name, asset_oid, newdata)
     
   def execute_operation(self, asset_type_name, oid, opname):

@@ -20,6 +20,8 @@ def http_get(url, username='', password=''):
   return response
 
 def http_post(url, username='', password='', data=''):
+  print "POST: "+url
+  print "Body: " +data
   request = Request(url, data)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
@@ -69,8 +71,10 @@ class V1Server(object):
     document = ElementTree.fromstring(body)
     if exception:
       exception.xmldoc = document
-      if exception.code == '404':
+      if exception.code == 404:
         raise V1AssetNotFoundError(exception)
+      elif exception.code == 400:
+        raise V1Error(body)
       else:
         #ElementTree.dump(exception.xmldoc)
         raise V1Error(exception)
@@ -97,67 +101,18 @@ class V1Server(object):
   def get_attr(self, asset_type_name, oid, attrname):
     path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
     return self.get_xml(path)
+  
+  def create_asset(self, asset_type_name, xmldata, context_oid=''):
+    body = ElementTree.tostring(xmldata, encoding="utf-8")
+    query = {}
+    if context_oid:
+      query = {'ctx': context_oid}
+    path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
+    return self.get_xml(path, query=query, postdata=body)
     
-  def update_asset(self, asset_type_name, oid, newdata):
-    update_doc = Element('Asset')
-    for attrname, newvalue in newdata.items():
-      if hasattr(newvalue, '_v1_v1meta'):
-        node = Element('Relation')
-        node.set('name', attrname)
-        node.set('act', 'set')
-        ra = Element('Asset')
-        ra.set('idref', newvalue.idref)
-        node.append(ra)
-      elif isinstance(newvalue, list):
-        node = Element('Relation')
-        node.set('name', attrname)
-        for item in newvalue:
-          child = Element('Asset')
-          child.set('idref', item.idref)
-          child.set('act', 'set')
-          node.append(child)
-      else:
-        node = Element('Attribute')
-        node.set('name', attrname)
-        node.set('act', 'set')
-        node.text = str(newvalue)
-      update_doc.append(node)
+  def update_asset(self, asset_type_name, oid, update_doc):
     newdata = ElementTree.tostring(update_doc, encoding='utf-8')
     path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path, postdata=newdata)
-    """
-    
-    {'Attribute1': 'AttributeValue',
-     'Relation1': OtherAssetClassInstance,
-     'MVR1': [OtherAssetClassInstance, ...],
-     }
-     ->
-     <Asset name="Story">
-     
-       <Attribute name="Attribute1" act="set">AttributeValue</Attribute>
-       
-       <Relation name="Relation1" act="set">
-         <Asset idref="Whatever:1245" />
-       </Relation>
-       
-       <Relation name="MVR1">
-         <Asset idref="Whatever:0001" act="set" />
-       </Relation>
-       
-     </Asset>
-     """
-
-    
-    
-
-      
-      
-      
-  
-      
-    
-    
-    
-    
 
 
