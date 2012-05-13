@@ -20,8 +20,6 @@ def http_get(url, username='', password=''):
   return response
 
 def http_post(url, username='', password='', data=''):
-  print "POST: "+url
-  print "Body: " +data
   request = Request(url, data)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
