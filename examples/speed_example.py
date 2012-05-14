@@ -1,4 +1,3 @@
-
 import time
 
 from v1pysdk import V1Meta
@@ -7,11 +6,8 @@ meta = V1Meta()
 
 t0 = time.time()
 
-all_asset_types = meta.AssetType.query()
-all_queries = [meta.asset_class(type.Name).query() for type in all_asset_types] 
-
 def process_queries(queries):
-  for query in queries:
+  for query in (meta.asset_class(type.Name) for type in meta.AssetType):
     for asset in query:
         try:
           asset._v1_refresh()
@@ -19,7 +15,7 @@ def process_queries(queries):
         except Exception, e:
           yield 'Error! %s(%s)'%(asset._v1_asset_type_name, asset._v1_oid)
 
-all_assets = list(process_queries(all_queries))
+all_assets = list(process_queries())
 
 t1 = time.time()
 
