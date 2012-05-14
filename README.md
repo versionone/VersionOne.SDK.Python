@@ -23,16 +23,16 @@ An API client for the VersionOne agile project management system.
     Asset instances are created with any data available, and query the server on-demand
     for attributes that aren't currently fetched. 
 
-* Simple query syntax::
+* Simple query syntax:
 
       for s in v1.Story.where(Name='Add feature X to main product"):
           print s.Name, s.CreateDate, [o.name for o in s.Owners]
       
-* Simple creation syntax::
+* Simple creation syntax:
 
       new_story = v1.Story.create(Name='New Story', scope=v1.Scope(1002))
   
-* Simple update syntax::
+* Simple update syntax:
 
       v1.Story(1005).Name = 'Super Cool Feature Redux'
       v1.Owners = list( v1.Members.where(Name='Joe Koberg') )
