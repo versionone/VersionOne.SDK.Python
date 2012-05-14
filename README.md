@@ -12,12 +12,28 @@
   Just instantiate a V1Meta.  All asset types defined on the server are available
   as attributes on the instance.  The metadata is only loaded once, so you must
   create a new instance of V1Meta to pick up metadata changes.
+  
+      from v1pysdk import V1Meta
+      
+      v1 = V1Meta()  # Assumes localhost/VersionOne.Web, credentials Admin/Admin
+      
+      v1 = V1Meta(
+             address = 'v1server.mycompany.com',
+             instance = 'VersionOne',
+             username = 'jsmith',
+             password = 'swordfish'
+             )
 
 
 ### Simple access to individual assets:
 
   Assets are created on demand and cached so that once instance always represents
-  the same asset.  
+  the same asset.
+
+      s = v1.Story(1005)
+      
+      print s is v1.Story(1005)   # True
+      
 
 
 ### Lazyily loaded values and relations:
@@ -35,6 +51,8 @@
 ### Simple creation syntax:
 
       new_story = v1.Story.create(Name='New Story', scope=v1.Scope(1002))
+      # creation happens immediately. No need to commit.
+      print new_story
 
 
 ### Simple update syntax:
