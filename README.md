@@ -94,6 +94,13 @@
       print epic.Super.Scope.Name  #=> 'Products'
       
 
+### Operations:
+
+  Operations on assets can be initiated by calling the appropriate method on an asset instance:
+  
+      for story in epic.Subs:
+        story.QuickSignup() 
+
 
 ### Simple query syntax:
 
