@@ -39,10 +39,12 @@ class V1Query(object):
     return self
     
   def set(self, **updatelist):
-    if not self.query_has_run:
-      self.run_query()
     for found_asset in self:
       found_asset.pending(updatelist)
+      
+  def __getattr__(self, attrname):
+    "return a sequence of the attribute from all matched results "
+    return (getattr(i, attrname) for i in self)
       
       
         
@@ -107,7 +109,7 @@ class BaseAsset(object):
     "produce string representation"
     out = "{0}({1})".format(self._v1_asset_type_name, self._v1_oid)
     if self._v1_current_data:
-      out += '.with_data({0})'.format(self._v1_current_data)
+      out += '.with_data({0})'.format(dict((k,v) for (k,v) in self._v1_current_data.items() if v))
     if self._v1_new_data:
       out += '.pending({0})'.format(self._v1_new_data)
     return out
