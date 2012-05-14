@@ -106,7 +106,7 @@
           print s.Name, [o.Name for o in s.Owners]
           
           
-### Advanced query syntax:
+### Advanced query, taking the standard V1 query syntax.
 
       for s in v1.Story.query("Estimate>5,TotalDone.@Count<10"):
           print s.Name
