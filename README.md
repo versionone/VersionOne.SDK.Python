@@ -1,5 +1,4 @@
 
-
 # An API client for the VersionOne agile project management system.
 
 
@@ -74,7 +73,27 @@
 ### Lazyily loaded values and relations:
 
   Asset instances are created with any data available, and query the server on-demand
-  for attributes that aren't currently fetched. 
+  for attributes that aren't currently fetched.  A basic set of attributes is fetched
+  upon the first unfound attribute.  The relationship network can be traversed at will
+  and assets will be fetched as needed
+  
+      e = v1.Epic(324355)
+      
+      # No data fetched yet.
+      print e  #=>  Epic(324355)
+      
+      # Access an attribute.
+      print epic.Name  #=> "Implement Team Features"
+      
+      # Now some data has been fetched
+      print epic       #=> Epic(324355).with_data({'AssetType': 'Epic', 'Description': "Make featuers easier for new team members",
+                           'AssetState': '64', 'SecurityScope_Name': 'Projects', 'Number': 'E-01958', 'Super_Number': 'E-01902',
+                           'Scope_Name': 'Projects', 'Super_Name': 'New Feature Development', 'Scope': [Scope(314406)],
+                           'SecurityScope': [Scope(314406)], 'Super': [Epic(312659)], 'Order': '-24', 'Name': 'Team Features'})
+      
+      # Freely traverse the relationship graph
+      print epic.Super.Scope.Name  #=> 'Products'
+      
 
 
 ### Simple query syntax:
