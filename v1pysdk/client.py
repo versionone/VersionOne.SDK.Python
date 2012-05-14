@@ -41,13 +41,15 @@ class V1Server(object):
     self.password = password
     
   def build_url(self, path, query='', fragment='', params='', port=80):
+    "So we dont have to interpolate urls ad-hoc"
     path = self.instance + path
     if isinstance(query, dict):
       query = urlencode(query)
     url = urlunparse( ('http', self.address, path, params, query, fragment) )
     return url
     
-  def get(self, path, query='', postdata=None):
+  def fetch(self, path, query='', postdata=None):
+    "Perform an HTTP GET or POST depending on whether postdata is present"
     url = self.build_url(path, query=query)
     try:
       if postdata is not None:
@@ -61,7 +63,7 @@ class V1Server(object):
       return (e, body)
       
   def get_xml(self, path, query='', postdata=None):
-    exception, body = self.get(path, query=query, postdata=postdata)
+    exception, body = self.fetch(path, query=query, postdata=postdata)
     document = ElementTree.fromstring(body)
     if exception:
       exception.xmldoc = document
@@ -70,7 +72,6 @@ class V1Server(object):
       elif exception.code == 400:
         raise V1Error(body)
       else:
-        #ElementTree.dump(exception.xmldoc)
         raise V1Error(exception)
     return document
    

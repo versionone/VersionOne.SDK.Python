@@ -1,15 +1,22 @@
 from client import *
 
+from elementtree import ElementTree
 
 
 class V1Query(object):
+  """A fluent query object. Use .select() and .where() to add items to the
+  select list and the query criteria, then iterate over the object to execute
+  and use the query results."""
+  
   def __init__(self, asset_class):
+    "Takes the asset class we will be querying"
     self.asset_class = asset_class
     self.where_terms = {}
     self.sel_list = []
     self.query_has_run = False
     
   def __iter__(self):
+    "Iterate over the results."
     if not self.query_has_run:
       self.run_query()
     for found_asset in self.query_results.findall('Asset'):
@@ -17,6 +24,7 @@ class V1Query(object):
       yield self.asset_class.from_query_select(found_asset)
       
   def run_query(self):
+    "Actually hit the server to perform the query"
     url_params = {}
     if self.sel_list:
       url_params['sel'] = ','.join(self.sel_list)
@@ -31,10 +39,15 @@ class V1Query(object):
     return xml
     
   def select(self, *args, **kw):
+    """Add attribute names to the select list for this query. The attributes
+    in the select list will be returned in the query results, and can be used
+    without further network traffic"""
     self.sel_list.extend(args)
     return self
     
   def where(self, *args, **kw):
+    """Add where terms to the criteria for this query. Right now this method
+    only allows Equals comparisons."""
     self.where_terms.update(kw)
     return self
     
@@ -143,6 +156,7 @@ class BaseAsset(object):
     return self
     
   def pending(self, newdata):
+    "bulk-set data to commit"
     self._v1_new_data.update(dict(newdata))
     self._v1_v1meta.add_to_dirty_list(self)
     self._v1_needs_commit = True
@@ -165,8 +179,8 @@ class BaseAsset(object):
     return self._v1_v1meta.get_attr(self._v1_asset_type_name, self._v1_oid, attr)
     
   def _v1_execute_operation(self, opname):
-    self._v1_needs_refresh = True
     return self._v1_v1meta.execute_operation(self._v1_asset_type_name, self._v1_oid, opname)
+    self._v1_needs_refresh = True
 
 
 def key_by_args_kw(old_f, args, kw, cache_data):
@@ -191,7 +205,8 @@ def cached_by_keyfunc(keyfunc):
   return decorator
 
 
-from elementtree import ElementTree
+memoized = cached_by_keyfunc(key_by_args_kw)
+
 
 class V1Meta(object):        
   def __init__(self, username='admin', password='admin'):
@@ -204,7 +219,7 @@ class V1Meta(object):
     "that we don't have."
     return self.asset_class(attr)
     
-  @cached_by_keyfunc(key_by_args_kw)
+  @memoized
   def asset_class(self, asset_type_name):
     xmldata = self.server.get_meta_xml(asset_type_name)
     class_members = {
