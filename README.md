@@ -114,6 +114,8 @@
 
 ### Simple creation syntax:
 
+  GOTCHA: All "required" attributes must be set, or the server will reject the data.
+
       new_story = v1.Story.create(Name='New Story', scope=v1.Scope(1002))
       # creation happens immediately. No need to commit.
       print new_story
