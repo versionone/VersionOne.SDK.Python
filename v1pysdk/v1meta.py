@@ -245,7 +245,9 @@ class V1Meta(object):
             raise NotImplementedError
         else:
           def getter(self, attr=attr):
-            return self._v1_getattr(attr)[0]
+            v = self._v1_getattr(attr)
+            if v:
+              return self._v1_getattr(attr)[0]
           def setter(self, value, attr=attr):
             return self._v1_setattr(attr, [value])
           def deleter(self, attr=attr):
