@@ -1,4 +1,3 @@
-
 # An API client for the VersionOne agile project management system.
 
 
@@ -100,6 +99,17 @@
 
       for s in v1.Story.where(Name='Add feature X to main product"):
           print s.Name, s.CreateDate, ', '.join([owner.Name for owner in s.Owners])
+          
+      # Select only some attributes to reduce traffic
+      
+      for s in v1.Story.select('Name', 'Owners').where(Estimate='10'):
+          print s.Name, [o.Name for o in s.Owners]
+          
+          
+### Advanced query syntax:
+
+      for s in v1.Story.query("Estimate>5,TotalDone.@Count<10"):
+          print s.Name
 
 
 ### Simple creation syntax:
