@@ -209,8 +209,8 @@ memoized = cached_by_keyfunc(key_by_args_kw)
 
 
 class V1Meta(object):        
-  def __init__(self, username='admin', password='admin'):
-    self.server = V1Server(username=username, password=password)
+  def __init__(self, address='localhost', instance='VersionOne.Web', username='admin', password='admin'):
+    self.server = V1Server(address, instance, username, password)
     self.global_cache = {}
     self.dirtylist = []
     
