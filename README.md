@@ -45,7 +45,7 @@
 ### Simple query syntax:
 
       for s in v1.Story.where(Name='Add feature X to main product"):
-          print s.Name, s.CreateDate, [o.name for o in s.Owners]
+          print s.Name, s.CreateDate, ', '.join([owner.Name for owner in s.Owners])
 
 
 ### Simple creation syntax:
@@ -79,4 +79,6 @@
   * Examples
   
     * provide an actual integration example
+    
+  * Asset creation templates and creation "in context of" other asset
       
