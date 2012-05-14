@@ -119,7 +119,7 @@
       print new_story
 
 
-### Simple update syntax:
+### Simple update syntax.  Nothing is written until V1Meta.commit() is called, and then all dirty assets are written out.
 
       story = v1.Story(1005)
       story.Name = 'Super Cool Feature Redux'
