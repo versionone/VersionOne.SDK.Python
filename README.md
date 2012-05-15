@@ -106,6 +106,24 @@
         story.QuickSignup() 
 
 
+### Iterating through all assets of a type
+
+  The asset class is iterable to obtain all assets of that type. This is equivalent to the
+  "query", "select" or "where" methods when given no arguments.
+  
+      print "Members: " + ', '.join(m.Name for m in v1.Member)
+      
+  The query objects also support accesing an attribute name, which will return an iterable of that
+  attribute for all matched assets:
+  
+      # (If "Name" is not in the select list, we'll suffer an HTTP request per-member to fetch it.)
+      
+      matched = v1.Member.select('Name')
+      names = matched.Name
+      print "Members: " + ', '.join(names)
+      
+  
+
 ### Simple query syntax:
 
       for s in v1.Story.where(Name='Add feature X to main product"):
