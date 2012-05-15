@@ -87,11 +87,14 @@
       # Access an attribute.
       print epic.Name  #=> "Team Features"
       
-      # Now some data has been fetched
+      # Now some basic data has been fetched
       print epic       #=> Epic(324355).with_data({'AssetType': 'Epic', 'Description': "Make features easier for new team members",
                            'AssetState': '64', 'SecurityScope_Name': 'Projects', 'Number': 'E-01958', 'Super_Number': 'E-01902',
                            'Scope_Name': 'Projects', 'Super_Name': 'New Feature Development', 'Scope': [Scope(314406)],
                            'SecurityScope': [Scope(314406)], 'Super': [Epic(312659)], 'Order': '-24', 'Name': 'Team Features'})
+                           
+      # And further non-basic data is available, but will cause a request.
+      print epic.CreateDate   #=>  '2012-05-14T23:45:14.124'
       
   The relationship network can be traversed at will, and assets will be fetched as needed.
       
