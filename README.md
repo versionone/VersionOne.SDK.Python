@@ -101,6 +101,14 @@
       # Freely traverse the relationship graph
       print epic.Super.Scope.Name  #=> 'Products'
       
+  Since the metadata is modeled as data, you can find the list of "Basic" attributes:
+  
+      basic_attr_names = list( v1.AttributeDefinition
+                                 .where(IsBasic = "true")
+                                 .select('Name')
+                                 .Name
+                             )
+      
 
 ### Operations:
 
