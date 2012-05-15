@@ -76,10 +76,10 @@
   upon the first unfound attribute.  The relationship network can be traversed at will
   and assets will be fetched as needed
   
-      e = v1.Epic(324355)
+      epic = v1.Epic(324355)
       
       # No data fetched yet.
-      print e  #=>  Epic(324355)
+      print epic  #=>  Epic(324355)
       
       # Access an attribute.
       print epic.Name  #=> "Implement Team Features"
