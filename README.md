@@ -139,6 +139,23 @@
       v1.commit()  # flushes all pending updates to the server
 
 
+## Performance notes
+
+  An HTTP request is made to the server the first time each asset class is referenced.
+  
+  Assets do not make a request until a data item is needed from them. Further attribute access
+  is cached if a previous request returned that attribute. Otherwise a new request is made.
+  
+  The fastest way to collect and use a set of assets is to query, with the attributes
+  you expect to use included in the select list.  The entire result set will be returned
+  in a single HTTP transaction
+  
+  Writing to assets does not require reading them; setting attributes and calling the commit
+  function does not invoke the "read" pipeline.
+  
+  When an asset is committed or an operation is called, the asset data is invalidated and will
+  be read again on the next attribute access.
+
 ## TODO
 
   * Make things Moment-aware
