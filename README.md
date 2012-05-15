@@ -85,7 +85,7 @@
       print epic.Name  #=> "Implement Team Features"
       
       # Now some data has been fetched
-      print epic       #=> Epic(324355).with_data({'AssetType': 'Epic', 'Description': "Make featuers easier for new team members",
+      print epic       #=> Epic(324355).with_data({'AssetType': 'Epic', 'Description': "Make features easier for new team members",
                            'AssetState': '64', 'SecurityScope_Name': 'Projects', 'Number': 'E-01958', 'Super_Number': 'E-01902',
                            'Scope_Name': 'Projects', 'Super_Name': 'New Feature Development', 'Scope': [Scope(314406)],
                            'SecurityScope': [Scope(314406)], 'Super': [Epic(312659)], 'Order': '-24', 'Name': 'Team Features'})
@@ -151,7 +151,7 @@
   in a single HTTP transaction
   
   Writing to assets does not require reading them; setting attributes and calling the commit
-  function does not invoke the "read" pipelin.  Writing assets requires one HTTP POST per dirty
+  function does not invoke the "read" pipeline.  Writing assets requires one HTTP POST per dirty
   asset instance.
   
   When an asset is committed or an operation is called, the asset data is invalidated and will
