@@ -86,7 +86,7 @@
       print epic  #=>  Epic(324355)
       
       # Access an attribute.
-      print epic.Name  #=> "Implement Team Features"
+      print epic.Name  #=> "Team Features"
       
       # Now some data has been fetched
       print epic       #=> Epic(324355).with_data({'AssetType': 'Epic', 'Description': "Make features easier for new team members",
