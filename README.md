@@ -160,7 +160,7 @@
 
       story = v1.Story(1005)
       story.Name = 'Super Cool Feature Redux'
-      story.Owners = list( v1.Members.where(Name='Joe Koberg') )
+      story.Owners = list( v1.Member.where(Name='Joe Koberg') )
       
       v1.commit()  # flushes all pending updates to the server
 
