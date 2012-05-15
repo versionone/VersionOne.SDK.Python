@@ -151,7 +151,8 @@
   in a single HTTP transaction
   
   Writing to assets does not require reading them; setting attributes and calling the commit
-  function does not invoke the "read" pipeline.
+  function does not invoke the "read" pipelin.  Writing assets requires one HTTP POST per dirty
+  asset instance.
   
   When an asset is committed or an operation is called, the asset data is invalidated and will
   be read again on the next attribute access.
