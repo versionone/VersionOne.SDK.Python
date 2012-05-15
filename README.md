@@ -130,6 +130,12 @@
 
 ### Simple query syntax:
 
+  Use .where(Attr="value", ...) to introduce "Equals" comparisons, and .select("Attr", ...) to append to the select list. They
+  return a query object on which you can call more .where()'s and .select()'s.  Iterating through
+  the query object will run the query.
+  
+  Non-"Equal" comparisons are not supported (Use the advanced query syntax).
+
       for s in v1.Story.where(Name='Add feature X to main product"):
           print s.Name, s.CreateDate, ', '.join([owner.Name for owner in s.Owners])
           
