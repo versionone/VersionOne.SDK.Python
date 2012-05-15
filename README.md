@@ -60,13 +60,17 @@
 
 ### Simple access to individual assets:
 
-  Assets are created on demand and cached so that once instance always represents
-  the same asset.
+  Asset instances are created on demand and cached so that instances with the same OID are always
+  the same object.  You can retrieve an instance by passing an asset ID to an asset class:
 
       s = v1.Story(1005)
       
-      print s is v1.Story(1005)   # True
       
+  Or by providing an OID Token:
+  
+      s = v1.asset_from_oid('Story:1005')
+      
+      print s is v1.Story(1005)   # True
 
 
 ### Lazyily loaded values and relations:
