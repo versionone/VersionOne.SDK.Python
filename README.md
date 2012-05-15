@@ -75,10 +75,9 @@
 
 ### Lazyily loaded values and relations:
 
-  Asset instances are created with any data available, and query the server on-demand
-  for attributes that aren't currently fetched.  A basic set of attributes is fetched
-  upon the first unfound attribute.  The relationship network can be traversed at will
-  and assets will be fetched as needed
+  Asset instances are created empty, or with query results if available. The server is
+  accessed for attributes that aren't currently fetched.  A basic set of attributes is fetched
+  upon the first unfound attribute.  
   
       epic = v1.Epic(324355)
       
@@ -93,6 +92,8 @@
                            'AssetState': '64', 'SecurityScope_Name': 'Projects', 'Number': 'E-01958', 'Super_Number': 'E-01902',
                            'Scope_Name': 'Projects', 'Super_Name': 'New Feature Development', 'Scope': [Scope(314406)],
                            'SecurityScope': [Scope(314406)], 'Super': [Epic(312659)], 'Order': '-24', 'Name': 'Team Features'})
+      
+  The relationship network can be traversed at will, and assets will be fetched as needed.
       
       # Freely traverse the relationship graph
       print epic.Super.Scope.Name  #=> 'Products'
