@@ -216,4 +216,6 @@
     * provide an actual integration example
     
   * Asset creation templates and creation "in context of" other asset
+  
+  * Correctly handle multi-valued attributes including removal of values.
       
