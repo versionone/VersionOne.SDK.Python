@@ -219,6 +219,12 @@ class V1Meta(object):
     "that we don't have."
     return self.asset_class(attr)
     
+  def __enter__(self):
+    pass
+  
+  def __exit__(self):
+    self.commit()
+    
   @memoized
   def asset_class(self, asset_type_name):
     xmldata = self.server.get_meta_xml(asset_type_name)
