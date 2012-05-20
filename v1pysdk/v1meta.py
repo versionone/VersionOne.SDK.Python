@@ -51,6 +51,9 @@ class V1Query(object):
     self.where_terms.update(kw)
     return self
     
+  def first(self):
+    return list(self)[0]
+    
   def set(self, **updatelist):
     for found_asset in self:
       found_asset.pending(updatelist)
