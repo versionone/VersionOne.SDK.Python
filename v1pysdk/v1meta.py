@@ -284,7 +284,7 @@ class V1Meta(object):
   def generate_update_doc(self, newdata):
     update_doc = Element('Asset')
     for attrname, newvalue in newdata.items():
-      if hasattr(newvalue, '_v1_v1meta'):
+      if isinstance(newvalue, BaseAsset):
         node = Element('Relation')
         node.set('name', attrname)
         node.set('act', 'set')
