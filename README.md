@@ -144,11 +144,11 @@
 
 #### Query Objects
 
-      the select() and where() methods on asset instances return a query object
-      upon which you can call more .where()'s and .select()'s.  Iterating through
-      the query object will run the query.
+  the `select()` and where() methods on asset instances return a query object
+  upon which you can call more .where()'s and .select()'s.  Iterating through
+  the query object will run the query.
       
-      the .first() method on a query object will run the query and return the first result.
+  the .first() method on a query object will run the query and return the first result.
 
 #### Simple query syntax:
 
