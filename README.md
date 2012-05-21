@@ -144,15 +144,16 @@
 
 #### Query Objects
 
-  the `select()` and where() methods on asset instances return a query object
-  upon which you can call more .where()'s and .select()'s.  Iterating through
+  the `select()` and `where()` methods on asset instances return a query object
+  upon which you can call more `.where()`'s and `.select()`'s.  Iterating through
   the query object will run the query.
       
-  the .first() method on a query object will run the query and return the first result.
+  the `.first()` method on a query object will run the query and return the first result.
 
 #### Simple query syntax:
 
-  Use .where(Attr="value", ...) to introduce "Equals" comparisons, and .select("Attr", ...) to append to the select list.
+  Use `.where(Attr="value", ...)` to introduce "Equals" comparisons, and
+  `.select("Attr", ...)` to append to the select list.
   
   Non-"Equal" comparisons are not supported (Use the advanced query syntax).
 
