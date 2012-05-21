@@ -79,10 +79,14 @@ class V1Server(object):
     path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path)
     
-  def get_query_xml(self, asset_type_name, where):
+  def get_query_xml(self, asset_type_name, where=None, sel=None):
     path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
-    whereclause = urlencode({"Where": where})
-    return self.get_xml(path, query=whereclause)
+    query = {}
+    if where is not None:
+        query['Where'] = where
+    if sel is not None:
+        query['sel'] = sel        
+    return self.get_xml(path, query=query)
     
   def get_meta_xml(self, asset_type_name):
     path = '/meta.v1/{0}'.format(asset_type_name)
