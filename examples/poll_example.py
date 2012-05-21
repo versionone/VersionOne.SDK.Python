@@ -1,6 +1,5 @@
 
 from v1meta import V1Meta
-
 from v1poll import V1Poller
 
 def build_fax_file(story):
@@ -10,6 +9,6 @@ def build_fax_file(story):
         f.write(', '.join(o.Name for o in story.Owners) + '\n')
     
 with V1Meta() as v1:
-  with V1Poller(v1) as poller:    
-    poller.run_on_new('Story', fax_to_russia)
+  with V1Poller(v1) as poller:
+    poller.run_on_new('Story', build_fax_file)
 
