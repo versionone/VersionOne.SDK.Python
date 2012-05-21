@@ -238,7 +238,7 @@ class V1Meta(object):
     class_members = {
         '_v1_v1meta': self, 
         '_v1_asset_type_name': asset_type_name,
-        '_v1_asset_type_xml': xmldata,
+        #'_v1_asset_type_xml': xmldata,
         }
     for operation in xmldata.findall('Operation'):
       opname = operation.get('name')

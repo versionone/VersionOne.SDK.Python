@@ -8,11 +8,16 @@ from collections import defaultdict
 
 
 class V1Poll(object):
-    def __init__(self, filename='versionone_poll_state.sqlite'):
+    def __init__(self, meta=None, filename='versionone_poll_state.sqlite'):
+        if not meta:
+          meta = V1Meta()
         self.datafile_name = filename
         self.db = sqlite3.connect(self.datafile_name)
         self.registrations = defaultdict(list)
-              
+     
+    def __enter__(self):
+        pass
+    
     def __exit__(self):
         self.poll()
         
