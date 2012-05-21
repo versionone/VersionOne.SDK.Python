@@ -149,6 +149,8 @@
   the query object will run the query.
       
   the `.first()` method on a query object will run the query and return the first result.
+  
+  Query results
 
 #### Simple query syntax:
 
@@ -176,20 +178,26 @@
 ### Simple creation syntax:
 
   GOTCHA: All "required" attributes must be set, or the server will reject the data.
-
-      new_story = v1.Story.create(Name='New Story', scope=v1.Scope(1002))
+  
+      from v1pysdk import V1Meta
+      v1 = V1Meta(username='bob', password='pop')
+      new_story = v1.Story.create(
+        Name = 'New Story',
+        Scope = v1.Scope.where(Name='2012 Projects').first()
+        )
       # creation happens immediately. No need to commit.
-      print new_story
+      print new_story.CreateDate
+      new_story.QuickSignup()
+      print 'Owners: ' + ', '.join(o.Name for o in story.Owners)
 
 
 ### Simple update syntax.
 
   Nothing is written until V1Meta.commit() is called, and then all dirty assets are written out.
 
-      story = v1.Story(1005)
+      story = v1.Story.where(Name='Super Cool Feature do over').first()
       story.Name = 'Super Cool Feature Redux'
-      story.Owners = list( v1.Member.where(Name='Joe Koberg') )
-      
+      story.Owners = v1.Member.where(Name='Joe Koberg')      
       v1.commit()  # flushes all pending updates to the server
 
   The V1Meta object also serves as a context manager which will commit dirty object on exit.
