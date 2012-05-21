@@ -118,6 +118,9 @@
   
       for story in epic.Subs:
         story.QuickSignup() 
+        
+  The asset instance data will be invalidated upon success, and thus re-fetched on the next
+  attribute access.
 
 
 ### Iterating through all assets of a type
@@ -137,12 +140,19 @@
       print "Members: " + ', '.join(names)
       
   
+### Queries
 
-### Simple query syntax:
+#### Query Objects
 
-  Use .where(Attr="value", ...) to introduce "Equals" comparisons, and .select("Attr", ...) to append to the select list. They
-  return a query object on which you can call more .where()'s and .select()'s.  Iterating through
-  the query object will run the query.
+      the select() and where() methods on asset instances return a query object
+      upon which you can call more .where()'s and .select()'s.  Iterating through
+      the query object will run the query.
+      
+      the .first() method on a query object will run the query and return the first result.
+
+#### Simple query syntax:
+
+  Use .where(Attr="value", ...) to introduce "Equals" comparisons, and .select("Attr", ...) to append to the select list.
   
   Non-"Equal" comparisons are not supported (Use the advanced query syntax).
 
@@ -155,10 +165,11 @@
           print s.Name, [o.Name for o in s.Owners]
           
           
-### Advanced query, taking the standard V1 query syntax.
+#### Advanced query, taking the standard V1 query syntax.
 
       for s in v1.Story.query("Estimate>5,TotalDone.@Count<10"):
           print s.Name
+
 
 
 ### Simple creation syntax:
@@ -180,7 +191,52 @@
       
       v1.commit()  # flushes all pending updates to the server
 
+  The V1Meta object also serves as a context manager which will commit dirty object on exit.
+      
+      with V1Meta() as v1:
+        story = v1.Story.where(Name='New Features').first()
+        story.Owners = v1.Member.where(Name='Joe Koberg')
+        
+      print "Story committed implicitly."
 
+### Polling
+
+  A simple callback api is available to hook asset changes
+  
+      from v1meta import V1Meta
+      from v1poll import V1Poller
+      
+      MAILBODY = """
+      From: VersionOne Notification <notifier@versionone.mycorp.com>
+      To: John Smith <cto@mycorp.com>
+      
+      Please take note of the high risk story '{0}' recently created in VersionOne.
+      
+      Link: {1}
+      
+      
+      Thanks,
+      
+      Your VersionOne Software
+      """.lstrip()
+      
+      def notify_CTO_of_high_risk_stories(story):
+        if story.Risk > 10:
+            import smtplib, time
+            server = smtplib.SMTP('smtp.mycorp.com')
+            server.sendmail(MAILBODY.format(story.Name, story.url))
+            server.quit()
+            story.CustomNotificationLog = (story.CustomNotificationLog +
+                "\n Notified CTO on {0}".format(time.asctime()))
+                
+      with V1Meta() as v1:
+        with V1Poller(v1) as poller:
+          poller.run_on_new('Story', notify_CTO_of_high_risk_stories)
+          
+      print "Notification complete and log updated."
+          
+      
+      
 ## Performance notes
 
   An HTTP request is made to the server the first time each asset class is referenced.
