@@ -120,6 +120,10 @@ class BaseAsset(object):
   @property
   def idref(self):
     return self._v1_asset_type_name + ':' + str(self._v1_oid)
+    
+  @property
+  def url(self):
+      return self._v1_v1meta.server.build_url('/assetdetail.v1', query={oid: self.idref})
 
   def __repr__(self):
     "produce string representation"
