@@ -97,9 +97,9 @@ class BaseAsset(object):
   @classmethod
   def from_query_select(Class, xml):
     "Find or instantiate an object and fill it with data that just came back from query"
-    asset_type, oid = xml.get('id').split(':')
-    instance = Class(oid)   
+    idref = xml.get('id')
     data = Class._v1_v1meta.unpack_asset(xml)
+    instance = Class._v1_v1meta.asset_from_oid(idref)
     return instance.with_data(data)
 
   @classmethod
@@ -110,7 +110,7 @@ class BaseAsset(object):
   class __metaclass__(type):
     "provide a metaclass that knows how to be iterated over, so we can say list(v1.Story)"
     def __iter__(Class):
-      return Class.query()
+        return iter(Class.query())
   
   def __new__(Class, oid):
     "Tries to get an instance out of the cache first, otherwise creates one"
