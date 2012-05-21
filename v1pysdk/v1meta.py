@@ -253,7 +253,7 @@ class V1Meta(object):
           def getter(self, attr=attr):
             return self._v1_getattr(attr)
           def setter(self, value, attr=attr):
-            return self._v1_setattr(attr, value)
+            return self._v1_setattr(attr, list(value))
           def deleter(self, attr=attr):
             raise NotImplementedError
         else:
