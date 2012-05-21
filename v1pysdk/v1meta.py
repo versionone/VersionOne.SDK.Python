@@ -8,28 +8,41 @@ class V1Query(object):
   select list and the query criteria, then iterate over the object to execute
   and use the query results."""
   
-  def __init__(self, asset_class):
+  def __init__(self, asset_class, sel_string=None, where_string=None):
     "Takes the asset class we will be querying"
     self.asset_class = asset_class
     self.where_terms = {}
     self.sel_list = []
     self.query_has_run = False
+    self.sel_string = sel_string
+    if sel_string is not None:
+        self.empty_sel = False    
+    self.where_string = where_string
     
   def __iter__(self):
     "Iterate over the results."
     if not self.query_has_run:
       self.run_query()
     for found_asset in self.query_results.findall('Asset'):
-      idref = found_asset.get('id')
       yield self.asset_class.from_query_select(found_asset)
+      
+  def get_sel_string(self):
+      if self.sel_string:
+          return self.sel_string
+      return ','.join(self.sel_list)
+
+  def get_where_string(self):
+      if self.where_string:
+          return self.where_string
+      return ';'.join("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
       
   def run_query(self):
     "Actually hit the server to perform the query"
     url_params = {}
-    if self.sel_list:
-      url_params['sel'] = ','.join(self.sel_list)
-    if self.where_terms:
-      url_params['where'] = ';'.join("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
+    if self.get_sel_string() or self.empty_sel:
+      url_params['sel'] = self.get_sel_string()
+    if self.get_where_string():
+      url_params['where'] = self.get_where_string()
     urlquery = urlencode(url_params)    
     urlpath = '/rest-1.v1/Data/{0}'.format(self.asset_class._v1_asset_type_name)
     # warning: tight coupling ahead
@@ -69,13 +82,10 @@ class BaseAsset(object):
      built by V1Meta.asset_class"""
     
   @classmethod
-  def query(Class, where=''):
+  def query(Class, where=None, sel=None):
     'Takes a V1 Data query string and returns an iterable of all matching items'
-    match = Class._v1_v1meta.query(Class._v1_asset_type_name, where)
-    for asset in match.findall('Asset'):
-      idref = asset.get('id')
-      yield Class._v1_v1meta.asset_from_oid(idref)
-
+    return V1Query(Class, sel, where)
+    
   @classmethod
   def select(Class, *selectlist):
     return V1Query(Class).select(*selectlist)
@@ -330,8 +340,8 @@ class V1Meta(object):
     dummy_asset.append(xml)
     return self.unpack_asset(dummy_asset)[attrname]
     
-  def query(self, asset_type_name, wherestring):
-    return self.server.get_query_xml(asset_type_name, wherestring)
+  def query(self, asset_type_name, wherestring, selstring):
+    return self.server.get_query_xml(asset_type_name, wherestring, selstring)
     
   def read_asset(self, asset_type_name, asset_oid):
     xml = self.server.get_asset_xml(asset_type_name, asset_oid)
