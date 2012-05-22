@@ -46,16 +46,15 @@ class V1Poll(object):
         
         
         
-        previously_called_handlers = 
-        newly_registered_handlers = 
+        previously_called_handlers = None
+        newly_registered_handlers = None
         
-        previously_polled_asset_types = 
-        newly_registered_asset_types = 
+        previously_polled_asset_types = None
+        newly_registered_asset_types = None
         
         for asset_type in previously_polled_asset_types:
+            pass
           
-          
-        
         for row in rows:
           registered_funcs = self.registrations[row['asset_type']]
           
