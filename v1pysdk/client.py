@@ -53,7 +53,9 @@ class V1Server(object):
     url = self.build_url(path, query=query)
     try:
       if postdata is not None:
-        response = http_post(url, self.username, self.password, postdata)
+          if isinstance(postdata, dict):
+              postdata = urlencode(postdata)
+          response = http_post(url, self.username, self.password, postdata)
       else:
         response = http_get(url, self.username, self.password)
       body = response.read()
@@ -70,7 +72,7 @@ class V1Server(object):
       if exception.code == 404:
         raise V1AssetNotFoundError(exception)
       elif exception.code == 400:
-        raise V1Error(body)
+        raise V1Error('\n'+body)
       else:
         raise V1Error(exception)
     return document
