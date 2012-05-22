@@ -180,7 +180,7 @@
   GOTCHA: All "required" attributes must be set, or the server will reject the data.
   
       from v1pysdk import V1Meta
-      v1 = V1Meta(username='bob', password='pop')
+      v1 = V1Meta(username='admin', password='admin')
       new_story = v1.Story.create(
         Name = 'New Story',
         Scope = v1.Scope.where(Name='2012 Projects').first()
