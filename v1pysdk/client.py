@@ -4,8 +4,12 @@ from urllib2 import Request, urlopen, HTTPError
 from urllib import urlencode
 from urlparse import urlunparse
 
-from elementtree import ElementTree
-from elementtree.ElementTree import Element
+try:
+    from xml.etree import ElementTree
+    from xml.etree.ElementTree import Element
+except ImportError:
+    from elementtree import ElementTree
+    from elementtree.ElementTree import Element
 
 
 

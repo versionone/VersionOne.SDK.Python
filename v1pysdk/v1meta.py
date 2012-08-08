@@ -1,6 +1,7 @@
-
-
-from elementtree import ElementTree
+try:
+    from xml.etree import ElementTree
+except ImportError:
+    from elementtree import ElementTree
 
 from client import *
 from base_asset import BaseAsset
