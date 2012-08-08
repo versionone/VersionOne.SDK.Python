@@ -1,6 +1,7 @@
 
 import logging, time, base64
-from urllib2 import Request, urlopen, HTTPError
+import urllib2
+from urllib2 import Request, urlopen, HTTPError, HTTPDigestAuthHandler
 from urllib import urlencode
 from urlparse import urlunparse
 
@@ -11,14 +12,17 @@ except ImportError:
     from elementtree import ElementTree
     from elementtree.ElementTree import Element
 
+auth_handlers = [HTTPDigestAuthHandler]
 
+try:
+    from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
+    auth_handlers.append(HTTPNtlmAuthHandler)
+except ImportError:
+    pass
 
 def http_get(url, username='', password=''):
   "Do an HTTP Get with optional Basic authorization"
   request = Request(url)
-  if username:
-    auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
-    request.add_header('Authorization', 'Basic ' + auth_string)
   response = urlopen(request)
   return response
 
@@ -37,13 +41,27 @@ class V1AssetNotFoundError(V1Error): pass
 
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
-  
+
   def __init__(self, address='localhost', instance='VersionOne.Web', username='', password=''):
     self.address = address
-    self.instance = instance    
+    self.instance = instance
     self.username = username
     self.password = password
-    
+    self._install_openers()
+
+  def _install_openers(self):
+    """Install authentication handlers for NTLM and Digest auth.
+    """
+    if self.username:
+      base_url = self.build_url('')
+      password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+      password_manager.add_password(None, base_url, self.username, self.password)
+      handlers = [handler(password_manager) for handler in auth_handlers]
+      opener = urllib2.build_opener(*handlers)
+      urllib2.install_opener(opener)
+
+
+
   def build_url(self, path, query='', fragment='', params='', port=80):
     "So we dont have to interpolate urls ad-hoc"
     path = self.instance + path
