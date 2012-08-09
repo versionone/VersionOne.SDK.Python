@@ -11,6 +11,7 @@ from elementtree.ElementTree import Element
 
 def http_get(url, username='', password=''):
   "Do an HTTP Get with optional Basic authorization"
+  #print url
   request = Request(url)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
@@ -19,6 +20,7 @@ def http_get(url, username='', password=''):
   return response
 
 def http_post(url, username='', password='', data=''):
+  #print url, data
   request = Request(url, data)
   if username:
     auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
