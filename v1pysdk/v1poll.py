@@ -16,7 +16,7 @@ class V1Poll(object):
         self.registrations = defaultdict(list)
      
     def __enter__(self):
-        pass
+        return self
     
     def __exit__(self):
         self.poll()
