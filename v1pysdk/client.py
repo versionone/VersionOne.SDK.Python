@@ -18,7 +18,7 @@ try:
     from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
     auth_handlers.append(HTTPNtlmAuthHandler)
 except ImportError:
-    pass
+    logging.warn("Windows integrated authentication module (ntlm) not found.")
 
 def http_get(url, username='', password=''):
   "Do an HTTP Get with optional Basic authorization"
