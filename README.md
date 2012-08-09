@@ -9,8 +9,8 @@ input on design matters, notes about your use cases, and more pull requests!
 This product includes software developed at VersionOne 
 (http://versionone.com/). This product is open source and is licensed 
 under a modified BSD license, which reflects our intent that software 
-built with a dependency on the  VersionOne SDK.NET can be commercial or 
-open source, as the authors see fit.
+built with a dependency on v1pysdk can be commercial or open source, 
+as the authors see fit.
 
 ## Overview
 
