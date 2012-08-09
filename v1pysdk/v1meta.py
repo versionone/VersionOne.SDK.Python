@@ -20,9 +20,9 @@ class V1Meta(object):
     return self.asset_class(attr)
     
   def __enter__(self):
-    pass
+    return self
   
-  def __exit__(self):
+  def __exit__(self, *args, **kw):
     self.commit()
     
   @memoized
@@ -31,7 +31,6 @@ class V1Meta(object):
     class_members = {
         '_v1_v1meta': self, 
         '_v1_asset_type_name': asset_type_name,
-        #'_v1_asset_type_xml': xmldata,
         }
     for operation in xmldata.findall('Operation'):
       opname = operation.get('name')
@@ -74,9 +73,14 @@ class V1Meta(object):
     self.dirtylist.append(asset_instance)
     
   def commit(self):
-    for asset in self.dirtylist:
-      asset._v1_commit()
-    self.dirtylist = []
+      errors = []   
+      for asset in self.dirtylist:
+          try:
+              asset._v1_commit()
+          except V1Error, e:
+              errors.append(e)          
+          self.dirtylist = []
+      return errors
     
   def generate_update_doc(self, newdata):
     update_doc = Element('Asset')
