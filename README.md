@@ -1,5 +1,7 @@
 # An API client for the VersionOne agile project management system.
 
+NOTE: This software is preliminary and pre-beta quality.  We'd like your
+input on design matters, notes about your use cases, and more pull requests!
 
 ## Overview
 
@@ -208,9 +210,9 @@
         
       print "Story committed implicitly."
 
-### Polling
+### Polling (TODO)
 
-  A simple callback api is available to hook asset changes
+  A simple callback api will be available to hook asset changes
   
       from v1meta import V1Meta
       from v1poll import V1Poller
