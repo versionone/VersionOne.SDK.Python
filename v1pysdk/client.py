@@ -1,7 +1,7 @@
 
 import logging, time, base64
 import urllib2
-from urllib2 import Request, urlopen, HTTPError, HTTPDigestAuthHandler
+from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler
 from urllib import urlencode
 from urlparse import urlunparse
 
@@ -12,30 +12,14 @@ except ImportError:
     from elementtree import ElementTree
     from elementtree.ElementTree import Element
 
-auth_handlers = [HTTPBasicAuthHandler]
+AUTH_HANDLERS = [HTTPBasicAuthHandler]
 
 try:
     from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
-    auth_handlers.append(HTTPNtlmAuthHandler)
+    AUTH_HANDLERS.append(HTTPNtlmAuthHandler)
 except ImportError:
     logging.warn("Windows integrated authentication module (ntlm) not found.")
 
-def http_get(url, username='', password=''):
-  "Do an HTTP Get with optional Basic authorization"
-  #print url
-  request = Request(url)
-  response = urlopen(request)
-  return response
-
-def http_post(url, username='', password='', data=''):
-  #print url, data
-  request = Request(url, data)
-  if username:
-    auth_string = base64.encodestring(username + ':' + password).replace('\n', '')
-    request.add_header('Authorization', 'Basic ' + auth_string)
-  response = urlopen(request)
-  return response
-  
 
 class V1Error(Exception): pass
 
@@ -49,21 +33,25 @@ class V1Server(object):
     self.instance = instance
     self.username = username
     self.password = password
-    self._install_openers()
+    self._install_opener()
+        
+  def _install_opener(self):
+    base_url = self.build_url('')
+    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    password_manager.add_password(None, base_url, self.username, self.password)
+    handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
+    self.opener = urllib2.build_opener(*handlers)
 
-  def _install_openers(self):
-    """Install authentication handlers for NTLM and Digest auth.
-    """
-    if self.username:
-      base_url = self.build_url('')
-      password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-      password_manager.add_password(None, base_url, self.username, self.password)
-      handlers = [handler(password_manager) for handler in auth_handlers]
-      opener = urllib2.build_opener(*handlers)
-      urllib2.install_opener(opener)
-
-
-
+  def http_get(self, url):
+    request = Request(url)
+    response = self.opener.open(request)
+    return response
+  
+  def http_post(self, url, data=''):
+    request = Request(url, data)
+    response = self.opener.open(request)
+    return response
+    
   def build_url(self, path, query='', fragment='', params='', port=80):
     "So we dont have to interpolate urls ad-hoc"
     path = self.instance + path
@@ -79,9 +67,9 @@ class V1Server(object):
       if postdata is not None:
           if isinstance(postdata, dict):
               postdata = urlencode(postdata)
-          response = http_post(url, self.username, self.password, postdata)
+          response = self.http_post(url, postdata)
       else:
-        response = http_get(url, self.username, self.password)
+        response = self.http_get(url)
       body = response.read()
       return (None, body)
     except HTTPError, e:
