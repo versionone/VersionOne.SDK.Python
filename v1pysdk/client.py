@@ -12,7 +12,7 @@ except ImportError:
     from elementtree import ElementTree
     from elementtree.ElementTree import Element
 
-auth_handlers = [HTTPDigestAuthHandler]
+auth_handlers = [HTTPBasicAuthHandler]
 
 try:
     from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
