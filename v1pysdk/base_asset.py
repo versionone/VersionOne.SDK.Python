@@ -32,7 +32,7 @@ class BaseAsset(object):
     "create new asset on server and return created asset proxy instance"
     return Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
 
-  class __metaclass__(type):
+  class IterableType(type):
     "The type that's instantiated to make THIS class must have an __iter__, " 
     "so we provide a metaclass (a thing that provides a class when instantiated) "
     "that knows how to be iterated over, so we can say list(v1.Story)"
@@ -40,7 +40,9 @@ class BaseAsset(object):
         for instance in Class.query():
             instance.needs_refresh = True
             yield instance
-  
+            
+  __metaclass__ = IterableType
+              
   def __new__(Class, oid):
     "Tries to get an instance out of the cache first, otherwise creates one"
     cache_key = (Class._v1_asset_type_name, int(oid))
