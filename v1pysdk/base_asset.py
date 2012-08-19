@@ -70,15 +70,37 @@ class BaseAsset(object):
   def url(self):
       return self._v1_v1meta.server.build_url('/assetdetail.v1', query={'oid':self.idref})
 
+  class ReprDummy:
+      def __init__(self, value):
+          self.value = value
+      def __repr__(self):
+          return self.value.reprref
+
+  def repr_dummy(self, v):
+      if isinstance(v, list):
+          return [self.ReprDummy(item) if isinstance(item, BaseAsset) else item 
+                  for item in v]
+      elif isinstance(v, BaseAsset):
+          return self.ReprDummy(v)          
+      else:
+          return v
+          
+  def repr_shallow(self, d):
+      # patch up the dict that pformat sees to avoid repr loops
+      return pf( dict(
+                   (k, self.repr_dummy(v))
+                   for (k,v) 
+                   in d.items() 
+                   if v
+                 )
+             )
+          
   def __repr__(self):
-    out = "{0}({1})".format(self._v1_asset_type_name, self._v1_oid)
+    out = self.reprref
     if self._v1_current_data:
-      out += '.with_data({0})'.format(pf(dict((k,v)
-                                         for (k,v) in self._v1_current_data.items()
-                                         if v
-                                         )))
+        out += '.with_data({0})'.format(self.repr_shallow(self._v1_current_data))
     if self._v1_new_data:
-      out += '.pending({0})'.format(pf(self._v1_new_data))
+      out += '.pending({0})'.format(self.repr_shallow(self._v1_new_data))
     return out
     
   def _v1_getattr(self, attr):
