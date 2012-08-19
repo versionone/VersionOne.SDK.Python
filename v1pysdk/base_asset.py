@@ -33,14 +33,14 @@ class BaseAsset(object):
     return Class._v1_v1meta.create_asset(Class._v1_asset_type_name, newdata)
 
   class IterableType(type):
-    "The type that's instantiated to make THIS class must have an __iter__, " 
-    "so we provide a metaclass (a thing that provides a class when instantiated) "
-    "that knows how to be iterated over, so we can say list(v1.Story)"
     def __iter__(Class):
         for instance in Class.query():
             instance.needs_refresh = True
             yield instance
-            
+              
+  "The type that's instantiated to make THIS class must have an __iter__, " 
+  "so we provide a metaclass (a thing that provides a class when instantiated) "
+  "that knows how to be iterated over, so we can say list(v1.Story)"
   __metaclass__ = IterableType
               
   def __new__(Class, oid):
