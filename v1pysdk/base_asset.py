@@ -63,6 +63,10 @@ class BaseAsset(object):
     return self._v1_asset_type_name + ':' + str(self._v1_oid)
     
   @property
+  def reprref(self):
+      return "{0}({1})".format(self._v1_asset_type_name, self._v1_oid)
+    
+  @property
   def url(self):
       return self._v1_v1meta.server.build_url('/assetdetail.v1', query={'oid':self.idref})
 
