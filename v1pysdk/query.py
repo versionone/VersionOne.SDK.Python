@@ -56,9 +56,10 @@ class V1Query(object):
     self.sel_list.extend(args)
     return self
     
-  def where(self, *args, **kw):
+  def where(self, terms={}, **kw):
     """Add where terms to the criteria for this query. Right now this method
     only allows Equals comparisons."""
+    self.where_terms.update(terms)
     self.where_terms.update(kw)
     return self
     
