@@ -23,9 +23,9 @@ class V1Query(object):
     "Iterate over the results."
     if not self.query_has_run:
       self.run_query()
-    for result in self.query_results:
+    for (result, asof) in self.query_results:
       for found_asset in result.findall('Asset'):
-        yield self.asset_class.from_query_select(found_asset)
+        yield self.asset_class.from_query_select(found_asset, asof)
       
   def get_sel_string(self):
       if self.sel_string:
@@ -55,10 +55,10 @@ class V1Query(object):
       for asof in self.asof_list:
           url_params['asof'] = str(asof)
           xml = self.run_single_query(url_params, "Hist")
-          self.query_results.append(xml)
+          self.query_results.append((xml, asof))
     else:
       xml = self.run_single_query(url_params)
-      self.query_results.append(xml)
+      self.query_results.append((xml, None))
     self.query_has_run = True
     
   def select(self, *args, **kw):
