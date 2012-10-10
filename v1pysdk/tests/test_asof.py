@@ -17,17 +17,12 @@ select_template = "Workitems:PrimaryWorkitem[Status.Name='{0}'].Estimate.@Sum"
 def parsedate(d):
   return datetime.datetime.strptime(d, "%Y-%m-%d")
 
-def as_of_times_long(start, end, hoursper=2):
+def as_of_times(start, end, hoursper=8):
   current = start
   while current <= end:
     yield current
     current += datetime.timedelta(hours=hoursper)
 
-def as_of_times(start, end, hoursper=2):
-  yield start
-  yield end
-    
-    
 if __name__=="__main__":
     username, password, sprintName, outputFolder = sys.argv[1:5]
 
@@ -59,6 +54,6 @@ if __name__=="__main__":
         writer.writerow(['# Date'] + statuses)
         for result in results:
           row = [result.data[select_term] for select_term in select_list]
-          writer.writerow(row)
+          writer.writerow([result.data['AsOf']] + row)
     
 
