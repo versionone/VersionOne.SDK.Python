@@ -138,7 +138,8 @@ class V1Meta(object):
   def unpack_asset(self, xml):
     output = {}
     for attribute in xml.findall('Attribute'):
-      key = attribute.get('name').replace('.','_')
+      #key = attribute.get('name').replace('.','_')
+      key = attribute.get('name')
       value = attribute.text
       output[key] = value
 
