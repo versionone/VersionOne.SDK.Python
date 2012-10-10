@@ -18,6 +18,10 @@ class BaseAsset(object):
   @classmethod
   def where(Class, **wherekw):
     return V1Query(Class).where(**wherekw)
+    
+  @classmethod
+  def asof(Class, *asofs):
+      return V1Query(Class).asof(*asofs)
 
   @classmethod
   def from_query_select(Class, xml):
@@ -57,6 +61,10 @@ class BaseAsset(object):
       self._v1_needs_refresh = True
       cache[cache_key] = self
     return self
+
+  @property
+  def data(self):
+      return self._v1_current_data
 
   @property
   def idref(self):
