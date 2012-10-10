@@ -154,7 +154,7 @@ class V1Meta(object):
     return output
     
   def asset_from_oid(self, oidtoken):
-    asset_type, asset_id = oidtoken.split(':')
+    asset_type, asset_id = oidtoken.split(':')[:2]
     AssetClass = self.asset_class(asset_type)
     instance = AssetClass(asset_id)
     return instance
