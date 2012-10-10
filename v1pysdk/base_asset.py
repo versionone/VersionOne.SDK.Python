@@ -24,10 +24,11 @@ class BaseAsset(object):
       return V1Query(Class).asof(*asofs)
 
   @classmethod
-  def from_query_select(Class, xml):
+  def from_query_select(Class, xml, asof=None):
     "Find or instantiate an object and fill it with data that just came back from query"
     idref = xml.get('id')
     data = Class._v1_v1meta.unpack_asset(xml)
+    data['AsOf'] = asof
     instance = Class._v1_v1meta.asset_from_oid(idref)
     return instance.with_data(data)
 
