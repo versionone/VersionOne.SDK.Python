@@ -1,4 +1,4 @@
-import sys, datetime, csv, os
+import sys, datetime, csv, os, pprint
 
 from v1pysdk import V1Meta
 
@@ -17,14 +17,18 @@ select_template = "Workitems:PrimaryWorkitem[Status.Name='{0}'].Estimate.@Sum"
 def parsedate(d):
   return datetime.datetime.strptime(d, "%Y-%m-%d")
 
-def as_of_times(start, end, hoursper=2):
+def as_of_times_long(start, end, hoursper=2):
   current = start
   while current <= end:
     yield current
     current += datetime.timedelta(hours=hoursper)
 
+def as_of_times(start, end, hoursper=2):
+  yield start
+  yield end
+    
+    
 if __name__=="__main__":
-    print sys.argv[1:5]
     username, password, sprintName, outputFolder = sys.argv[1:5]
 
     v1 = V1Meta('www7.v1host.com', 'V1Production', username, password)
