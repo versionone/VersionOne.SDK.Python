@@ -73,6 +73,8 @@ class V1Server(object):
       body = response.read()
       return (None, body)
     except HTTPError, e:
+      if e.code == 401:
+          raise
       body = e.fp.read()
       return (e, body)
       
