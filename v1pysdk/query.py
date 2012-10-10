@@ -11,6 +11,8 @@ class V1Query(object):
     self.asset_class = asset_class
     self.where_terms = {}
     self.sel_list = []
+    self.asof_list = []
+    self.query_results = []
     self.query_has_run = False
     self.sel_string = sel_string
     if sel_string is not None:
@@ -21,8 +23,9 @@ class V1Query(object):
     "Iterate over the results."
     if not self.query_has_run:
       self.run_query()
-    for found_asset in self.query_results.findall('Asset'):
-      yield self.asset_class.from_query_select(found_asset)
+    for result in self.query_results:
+      for found_asset in result.findall('Asset'):
+        yield self.asset_class.from_query_select(found_asset)
       
   def get_sel_string(self):
       if self.sel_string:
@@ -34,6 +37,13 @@ class V1Query(object):
           return self.where_string
       return ';'.join("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
       
+  def run_single_query(self, url_params={}, api="Data"):
+      urlquery = urlencode(url_params)
+      urlpath = '/rest-1.v1/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
+      # warning: tight coupling ahead
+      xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
+      return xml
+      
   def run_query(self):
     "Actually hit the server to perform the query"
     url_params = {}
@@ -41,13 +51,15 @@ class V1Query(object):
       url_params['sel'] = self.get_sel_string()
     if self.get_where_string():
       url_params['where'] = self.get_where_string()
-    urlquery = urlencode(url_params)    
-    urlpath = '/rest-1.v1/Data/{0}'.format(self.asset_class._v1_asset_type_name)
-    # warning: tight coupling ahead
-    xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
-    self.query_results = xml
+    if self.asof_list:
+      for asof in self.asof_list:
+          url_params['asof'] = str(asof)
+          xml = self.run_single_query(url_params, "Hist")
+          self.query_results.append(xml)
+    else:
+      xml = self.run_single_query(url_params)
+      self.query_results.append(xml)
     self.query_has_run = True
-    return xml
     
   def select(self, *args, **kw):
     """Add attribute names to the select list for this query. The attributes
@@ -62,6 +74,14 @@ class V1Query(object):
     self.where_terms.update(terms)
     self.where_terms.update(kw)
     return self
+    
+  def asof(self, *asofs):
+      for asof_list in asofs:
+          if isinstance(asof_list, str):
+              asof_list = [asof_list]
+          for asof in asof_list:
+              self.asof_list.append(asof)
+      return self
     
   def first(self):
     return list(self)[0]
