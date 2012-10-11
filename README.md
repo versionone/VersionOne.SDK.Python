@@ -6,6 +6,7 @@ A Python API client for the VersionOne agile project management system.
 
 This software is preliminary and pre-beta quality. We would like your 
 input on design matters, notes about your use cases, and more pull requests! 
+
 This product includes software developed at VersionOne 
 (http://versionone.com/). This product is open source and is licensed 
 under a modified BSD license, which reflects our intent that software 
@@ -181,10 +182,25 @@ as the authors see fit.
           
 #### Advanced query, taking the standard V1 query syntax.
 
+  The "query" operator will take arbitrary V1 "where" terms for filtering.
+
       for s in v1.Story.query("Estimate>5,TotalDone.@Count<10"):
           print s.Name
 
 
+#### Advanced selection, taking the standard V1 selection syntax.
+
+  The "select" operator will allow arbitrary V1 "select" terms, and will add
+  them to the "data" mapping of the result with a key identical to the term used.
+  
+    select_term = "Workitems:PrimaryWorkitem[Status='Done'].Estimate.@Sum"
+    total_done = ( v1.Timebox
+                     .where(Name="Iteration 25")
+                     .select(select_term)
+                 )
+    for result in total_done:
+      print "Total 'Done' story points: ", result.data[select_term]
+    
 
 ### Simple creation syntax:
 
@@ -219,6 +235,30 @@ as the authors see fit.
         
       print "Story committed implicitly."
 
+### As Of / Historical Queries
+
+  Queries can return data "as of" a specific point in the past.  The .asof() query term can
+  take a list (or multiple positional parameters) of timestamps or strings in ISO date format.
+  The query is run for each timestamp in the list.  A single iterable is returned that will
+  iterate all of the collected results.  The results will all contain a data item "AsOf" with
+  the "As of" date of that item.  Note that the "As of" date is not the date of the previous
+  change to the item, but rather is exactly the same date passed into the query.  Also note
+  that timestamps such as "2012-01-01" are taken to be at the midnight starting that day, which
+  naturally excludes any activity happening during that day.  You may want to specify a timestamp
+  with a specific hour, or of the following day.
+  
+  TODO: what timezone is used?
+  
+      with V1Meta() as v1:
+        results = (v1.Story
+                     .select("Owners")
+                     .where(Name="Fix HTML5 Bug")
+                     .asof("2012-10-10", "2012-10-11")
+                  )
+        for result in results:
+            print result.data['AsOf'], [o.Name for o in result.Owners]
+      
+      
 ### Polling (TODO)
 
   A simple callback api will be available to hook asset changes
@@ -294,17 +334,21 @@ as the authors see fit.
   * Asset creation templates and creation "in context of" other asset
   
   * Correctly handle multi-valued attributes including removal of values.
-      
+    
+  
 ## License ##
+
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are 
 met:
 
 * Redistributions of source code must retain the above copyright 
   notice, this list of conditions and the following disclaimer.
+  
 * Redistributions in binary form must reproduce the above copyright 
   notice, this list of conditions and the following disclaimer in the 
   documentation and/or other materials provided with the distribution.
+  
 * Neither the name of VersionOne, Inc. nor the names of its 
   contributors may be used to endorse or promote products derived from 
   this software without specific prior written permission of 
