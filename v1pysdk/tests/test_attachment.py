@@ -23,8 +23,12 @@ attachment = v1.Attachment.create(
     Content = "",
     ContentType = "application/octet-stream",
     Filename = "test.dat",
-    Asset = story)
+    Asset = story
+    )
 
-v1.set_attachment_blob(attachment, '\x00\xFF'*20000)
 
-print len(v1.get_attachment_blob(attachment))
+attachment.file_data = '\x00\xFF'*20000
+
+print len(attachment.file_data)
+
+

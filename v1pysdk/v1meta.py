@@ -6,7 +6,7 @@ except ImportError:
 from client import *
 from base_asset import BaseAsset
 from cache_decorator import memoized
-
+from special_class_methods import special_classes
 
 
 class V1Meta(object):        
@@ -66,7 +66,14 @@ class V1Meta(object):
           def deleter(self, attr=attr):
             raise NotImplementedError
             
-      class_members[attr] = property(getter, setter, deleter) 
+      class_members[attr] = property(getter, setter, deleter)
+      
+    bases = [BaseAsset,]
+    # mix in any special methods
+    if asset_type_name in special_classes:
+      mixin = special_classes[asset_type_name]
+      bases.append(mixin)
+      
     new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
     return new_asset_class
     
