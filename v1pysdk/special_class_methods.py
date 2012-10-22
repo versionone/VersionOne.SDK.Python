@@ -1,6 +1,10 @@
 
 
+# objects here will be mixed into the dynamically created asset type classes
+# based on name.
 
+# This lets us extend certain asset types without having to give up the generic
+# dynamic meta implementation  
 
 class Attachment(object):
     def set_blob(self, blob):
@@ -11,7 +15,8 @@ class Attachment(object):
         
     file_data = property(get_blob, set_blob)
     
-    
-    
+
+
+# the special_classes mapping will be used to lookup mixins by asset type name. 
 special_classes = locals()
 

@@ -27,6 +27,11 @@ attachment = v1.Attachment.create(
     )
 
 
+
+# right now, every access to the "file_data" property causes an HTTP request.
+# in the future the SDK needs to cache this on reads and do dirty tracking / 
+# commit managment for writes.
+
 attachment.file_data = '\x00\xFF'*20000
 
 print len(attachment.file_data)
