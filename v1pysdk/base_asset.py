@@ -64,6 +64,10 @@ class BaseAsset(object):
     return self
 
   @property
+  def intid(self):
+      return self._v1_oid
+
+  @property
   def data(self):
       return self._v1_current_data
 

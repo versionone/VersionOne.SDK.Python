@@ -160,6 +160,16 @@ class V1Meta(object):
     instance = AssetClass(asset_id)
     return instance
     
+  def set_attachment_blob(self, attachment, data=None):
+     if isinstance(attachment, BaseAsset):
+         intid = attachment.intid
+     else:
+         intid = attachment    
+     return self.server.set_attachment_blob(attachment.intid, data)
+      
+  get_attachment_blob = set_attachment_blob
+      
+    
   #type_converters = dict(
   #  Boolean = bool
   #  Numeric = float,

@@ -21,6 +21,7 @@ except ImportError:
     logging.warn("Windows integrated authentication module (ntlm) not found.")
 
 
+
 class V1Error(Exception): pass
 
 class V1AssetNotFoundError(V1Error): pass
@@ -130,4 +131,18 @@ class V1Server(object):
     path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path, postdata=newdata)
 
+
+  def get_attachment_blob(self, attachment_id, blobdata=None):
+    path = '/attachment.v1/{0}'.format(attachment_id)
+    exception, body = self.fetch(path, postdata=blobdata)
+    if exception:
+        raise exception
+    return body
+    
+  set_attachment_blob = get_attachment_blob
+  
+    
+    
+  
+    
 
