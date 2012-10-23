@@ -74,7 +74,7 @@ class V1Meta(object):
       mixin = special_classes[asset_type_name]
       bases.append(mixin)
       
-    new_asset_class = type(asset_type_name, (BaseAsset,), class_members)
+    new_asset_class = type(asset_type_name, tuple(bases), class_members)
     return new_asset_class
     
   def add_to_dirty_list(self, asset_instance):
@@ -168,11 +168,8 @@ class V1Meta(object):
     return instance
     
   def set_attachment_blob(self, attachment, data=None):
-     if isinstance(attachment, BaseAsset):
-         intid = attachment.intid
-     else:
-         intid = attachment    
-     return self.server.set_attachment_blob(attachment.intid, data)
+     intid = attachment.intid if isinstance(attachment, BaseAsset) else attachment
+     return self.server.set_attachment_blob(intid, data)
       
   get_attachment_blob = set_attachment_blob
       
