@@ -140,17 +140,18 @@ as the authors see fit.
   The asset class is iterable to obtain all assets of that type. This is equivalent to the
   "query", "select" or "where" methods when given no arguments.
   
-      print "Members: " + ', '.join(m.Name for m in v1.Member)
+      # WARNING: Lots of HTTP requests this way.
+      members = list(v1.Member)                               # HTTP request to get the list of members.
+      print "Members: " + ', '.join(m.Name for m in members)  # HTTP request per member to fetch the Name
       
-  The query objects also support accesing an attribute name, which will return an iterable of that
-  attribute for all matched assets:
-  
-      # (If "Name" is not in the select list, we'll suffer an HTTP request per-member to fetch it.)
-      
-      matched = v1.Member.select('Name')
-      names = matched.Name
-      print "Members: " + ', '.join(names)
-      
+      # A much better way, requiring a single HTTP access via the query mechanism.
+      members = v1.Member.select('Name')
+      print "Members: " + ', '.join(m.Name for m in members)  # HTTP request to return list of members with Name attribute.
+
+      # There is also a shortcut for pulling an attribute off all the results
+      members = v1.Member.select('Name')
+      print "Members: " + ', '.join(members.Name)
+ 
   
 ### Queries
 
@@ -234,6 +235,13 @@ as the authors see fit.
         story.Owners = v1.Member.where(Name='Joe Koberg')
         
       print "Story committed implicitly."
+
+
+### Attachment Contents
+
+  Attachment file bodies can be fetched or set with the special "file_data" attribute on Attachment instances. 
+
+  See the v1pysdk/tests/test_attachment.py file for a full example.
 
 ### As Of / Historical Queries
 
