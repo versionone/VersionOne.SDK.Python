@@ -1,3 +1,4 @@
+
 from pprint import pformat as pf
 
 from query import V1Query
@@ -70,6 +71,9 @@ class BaseAsset(object):
   @property
   def data(self):
       return self._v1_current_data
+
+  def __getitem__(self, key):
+      return self._v1_current_data[key]
 
   @property
   def idref(self):
