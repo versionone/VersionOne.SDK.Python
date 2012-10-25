@@ -87,9 +87,14 @@ as the authors see fit.
 
 ### Lazyily loaded values and relations:
 
+  NOTE: Making requests synchronously for attribute access on each object is costly.  We recommend
+  using the query syntax to select, filter, aggregate, and retrieve values from related assets 
+  in a single HTTP transaction.
+
   Asset instances are created empty, or with query results if available. The server is
   accessed for attributes that aren't currently fetched.  A basic set of attributes is fetched
-  upon the first unfound attribute.  
+  upon the first unfound attribute. 
+
   
       epic = v1.Epic(324355)
       
