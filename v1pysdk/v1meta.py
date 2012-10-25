@@ -147,7 +147,11 @@ class V1Meta(object):
     for attribute in xml.findall('Attribute'):
       #key = attribute.get('name').replace('.','_')
       key = attribute.get('name')
-      value = attribute.text
+      values = attribute.findall('Value')
+      if values:
+          value = [v.text for v in values]
+      else:
+          value = attribute.text
       output[key] = value
 
     for relation in xml.findall('Relation'):
