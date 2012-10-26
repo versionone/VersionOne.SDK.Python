@@ -152,6 +152,8 @@ class V1Meta(object):
           value = [v.text for v in values]
       else:
           value = attribute.text
+      if value is None:
+          value = []  # it's either empty or a relation with zero items
       output[key] = value
 
     for relation in xml.findall('Relation'):
