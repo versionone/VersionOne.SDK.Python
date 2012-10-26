@@ -190,7 +190,9 @@ as the authors see fit.
 
   The "query" operator will take arbitrary V1 "where" terms for filtering.
 
-      for s in v1.Story.query("Estimate>5,TotalDone.@Count<10"):
+      for s in (v1.Story
+                  .filter("Estimate>'5',TotalDone.@Count<'10'")
+                  .select('Name')):
           print s.Name
 
 
@@ -208,6 +210,18 @@ as the authors see fit.
       print "Total 'Done' story points: ", result.data[select_term]
     
 
+#### Advanced Filtering and Selection
+
+  get a list of all the stories dedicated people are working on
+
+  writer = csv.writer(outfile)
+  results = (v1.Story
+               .select('Name', 'CreateDate', 'Estimate', 'Owners.Name')
+               .filter("Owners.OwnedWorkitems.@Count='1'"))
+  for result in results:
+     writer.writerow((result['Name'], ', '.join(result['Owners.Name'])))
+                      
+      
 ### Simple creation syntax:
 
   GOTCHA: All "required" attributes must be set, or the server will reject the data.

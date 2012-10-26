@@ -21,6 +21,10 @@ class BaseAsset(object):
     return V1Query(Class).where(**wherekw)
     
   @classmethod
+  def filter(Class, filterexpr):
+      return V1Query(Class).filter(filterexpr)
+    
+  @classmethod
   def asof(Class, *asofs):
       return V1Query(Class).asof(*asofs)
 

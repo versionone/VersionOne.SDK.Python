@@ -6,7 +6,7 @@ class V1Query(object):
   select list and the query criteria, then iterate over the object to execute
   and use the query results."""
   
-  def __init__(self, asset_class, sel_string=None, where_string=None):
+  def __init__(self, asset_class, sel_string=None, filterexpr=None):
     "Takes the asset class we will be querying"
     self.asset_class = asset_class
     self.where_terms = {}
@@ -17,7 +17,7 @@ class V1Query(object):
     self.sel_string = sel_string
     if sel_string is not None:
         self.empty_sel = False    
-    self.where_string = where_string
+    self.where_string = filterexpr
     
   def __iter__(self):
     "Iterate over the results."
@@ -33,10 +33,11 @@ class V1Query(object):
       return ','.join(self.sel_list)
 
   def get_where_string(self):
+      terms = list("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
       if self.where_string:
-          return self.where_string
-      return ';'.join("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
-      
+          terms.append(self.where_string)
+      return ';'.join(terms)
+            
   def run_single_query(self, url_params={}, api="Data"):
       urlquery = urlencode(url_params)
       urlpath = '/rest-1.v1/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
@@ -73,6 +74,10 @@ class V1Query(object):
     only allows Equals comparisons."""
     self.where_terms.update(terms)
     self.where_terms.update(kw)
+    return self
+    
+  def filter(self, filterexpr):
+    self.where_string = filterexpr
     return self
     
   def asof(self, *asofs):
