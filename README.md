@@ -34,40 +34,11 @@ as the authors see fit.
              )
 
       Story = v1.Story
-      print dir(Story)
-      #  ['Actuals', 'AffectedByDefects', 'AllocatedDetailEstimate', 'AllocatedToDo', 'AssetState',
-          'AssetType', 'Attachments', 'Benefits', 'BlockingIssues', 'Breakdown', 'CanConvertToDefect',
-          'CanUpdate', 'Category', 'ChangeComment', 'ChangeDate', 'ChangeDateUTC', 'ChangeReason',
-          'ChangeSets', 'ChangedBy', 'CheckBreakdown', 'CheckCopy', 'CheckDeepCopy', 'CheckInactivate',
-          'CheckMakeTemplate', 'CheckQuickClose', 'CheckQuickSignup', 'CheckReactivate',
-          'CheckShallowCopy', 'CheckSplit', 'Children', 'ChildrenAndDown', 'ChildrenAndMe',
-          'ChildrenMeAndDown', 'ClosedEstimate', 'CompleteEstimate', 'CompletedInBuildRuns',
-          'ConvertToDefect', 'Copy', 'CreateComment', 'CreateDate', 'CreateDateUTC', 'CreateReason',
-          'CreatedBy', 'Custom_AnalysisStatus', 'Custom_AutoEmailCount', 'Custom_EmailAttempts',
-          'Custom_EstimateMe2', 'Custom_ITKahnbahn', 'Custom_LastAutoEmail', 'Custom_SFDCAccountID',
-          'Custom_SFDCDate', 'Custom_SFDCLastActivity', 'Custom_ScheduledOn',
-          'Custom_ServicesClassofService', 'Custom_StyleStatus3', 'Custom_TestCustomField',
-          'Custom_TestType', 'Customer', 'DeepCopy', 'Delete', 'Dependants', 'Dependencies',
-          'Description', 'DetailEstimate', 'Estimate', 'EstimatedAllocatedDone', 'EstimatedDone',
-          'FakeAssetState', 'Goals', 'ID', 'Ideas', 'IdentifiedIn', 'Inactivate', 'Inactive',
-          'IncompleteEstimate', 'IsClosed', 'IsCompleted', 'IsDead', 'IsDeletable', 'IsDeleted',
-          'IsInactive', 'IsReadOnly', 'IsUndeletable', 'Issues', 'Jeopardy', 'Key', 'LastVersion',
-          'Links', 'MakeTemplate', 'MentionedInExpressions', 'Messages', 'Moment', 'MorphedInto',
-          'MyLastChangeMoment', 'Name', 'Number', 'OpenEstimate', 'Order', 'OriginalEstimate', 'Owners',
-          'Parent', 'ParentAndMe', 'ParentAndUp', 'ParentMeAndUp', 'Prior', 'Priority', 'QuickClose',
-          'QuickSignup', 'Reactivate', 'Reference', 'RequestedBy', 'Requests', 'RetireComment',
-          'RetireDate', 'RetireDateUTC', 'RetireReason', 'RetiredBy', 'Risk', 'Scope', 'SecurityScope',
-          'ShallowCopy', 'Source', 'Split', 'SplitFrom', 'SplitFromAndMe', 'SplitFromAndUp',
-          'SplitFromMeAndUp', 'SplitTo', 'SplitToAndDown', 'SplitToAndMe', 'SplitToMeAndDown', 'Status',
-          'Subs', 'SubsAndDown', 'SubsAndMe', 'SubsMeAndDown', 'Super', 'SuperAndMe', 'SuperAndUp',
-          'SuperMeAndUp', 'Team', 'Timebox', 'ToDo', 'Undelete', 'Value', 'Viewers', 'WasAnEpic',
-          '__class__', '__delattr__', '__dict__', '__doc__', '__format__', '__getattribute__', '__hash__',
-          '__init__', '__metaclass__', '__module__', '__new__', '__reduce__', '__reduce_ex__', '__repr__',
-          '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__',
-          '_v1_asset_type_name', '_v1_asset_type_xml', '_v1_commit', '_v1_execute_operation',
-          '_v1_get_single_attr', '_v1_getattr', '_v1_refresh', '_v1_setattr', '_v1_v1meta',
-          'create', 'from_query_select', 'idref', 'pending', 'query', 'select', 'where', 'with_data'
-          ]
+      
+      my_story = Story(1005) # internal numeric ID
+      
+      print my_story.CreateDate, my_story.Name
+      
 
 
 ### Simple access to individual assets:
@@ -362,7 +333,11 @@ as the authors see fit.
   
   * Correctly handle multi-valued attributes including removal of values.
     
-  
+#### Installation
+
+run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONPATH.
+
+
 ## License ##
 
 Redistribution and use in source and binary forms, with or without 
