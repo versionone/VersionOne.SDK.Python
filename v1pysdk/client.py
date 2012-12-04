@@ -16,9 +16,27 @@ AUTH_HANDLERS = [HTTPBasicAuthHandler]
 
 try:
     from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
-    AUTH_HANDLERS.append(HTTPNtlmAuthHandler)
 except ImportError:
     logging.warn("Windows integrated authentication module (ntlm) not found.")
+else:
+    class CustomHTTPNtlmAuthHandler(HTTPNtlmAuthHandler):
+        """ A version of HTTPNtlmAuthHandler that handles errors (better).
+
+            The default version doesn't use `self.parent.open` in it's
+            error handler, and completely bypasses the normal `OpenerDirector`
+            call chain, most importantly `HTTPErrorProcessor.http_response`,
+            which normally raises an error for 'bad' http status codes..
+        """
+        def http_error_401(self, req, fp, code, msg, hdrs):
+            response = HTTPNtlmAuthHandler.http_error_401(self, req, fp, code, msg, hdrs)
+            if not (200 <= response.code < 300):
+                response = self.parent.error(
+                        'http', req, response, response.code, response.msg,
+                        response.info)
+            return response
+
+    AUTH_HANDLERS.append(CustomHTTPNtlmAuthHandler)
+
 
 
 
