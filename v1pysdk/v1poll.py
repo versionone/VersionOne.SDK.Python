@@ -1,7 +1,7 @@
 
 
 
-from v1meta import V1Meta
+from .v1meta import V1Meta
 
 import sqlite3
 from collections import defaultdict
@@ -27,7 +27,7 @@ class V1Poll(object):
         
     def poll(self):
         raise NotImplementedError
-        for asset_type, callback in self.registrations.items():
+        for asset_type, callback in list(self.registrations.items()):
             callback_id = callback.__module__ + '.' + callback.__name__
         rows = self.db.query("""
             select asset_type, min(last_moment)

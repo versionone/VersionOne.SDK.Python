@@ -34,6 +34,6 @@ attachment = v1.Attachment.create(
 
 attachment.file_data = '\x00\xFF'*20000
 
-print len(attachment.file_data)
+print(len(attachment.file_data))
 
 

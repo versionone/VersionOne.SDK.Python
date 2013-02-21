@@ -1,9 +1,9 @@
 
 from pprint import pformat as pf
 
-from query import V1Query
+from .query import V1Query
 
-class BaseAsset(object):
+class BaseAsset(object, metaclass=IterableType):
   """Provides common methods for the dynamically derived asset type classes
      built by V1Meta.asset_class"""
     
@@ -51,13 +51,12 @@ class BaseAsset(object):
   "The type that's instantiated to make THIS class must have an __iter__, " 
   "so we provide a metaclass (a thing that provides a class when instantiated) "
   "that knows how to be iterated over, so we can say list(v1.Story)"
-  __metaclass__ = IterableType
               
   def __new__(Class, oid):
     "Tries to get an instance out of the cache first, otherwise creates one"
     cache_key = (Class._v1_asset_type_name, int(oid))
     cache = Class._v1_v1meta.global_cache
-    if cache.has_key(cache_key):
+    if cache_key in cache:
       self = cache[cache_key]
     else:
       self = object.__new__(Class)
@@ -111,7 +110,7 @@ class BaseAsset(object):
       return pf( dict(
                    (k, self.repr_dummy(v))
                    for (k,v) 
-                   in d.items() 
+                   in list(d.items()) 
                    if v
                  )
              )
@@ -127,12 +126,12 @@ class BaseAsset(object):
   def _v1_getattr(self, attr):
     "Intercept access to missing attribute names. "
     "first return uncommitted data, then refresh if needed, then get single attr, else fail"
-    if self._v1_new_data.has_key(attr):
+    if attr in self._v1_new_data:
       value = self._v1_new_data[attr]
     else:
       if self._v1_needs_refresh:
         self._v1_refresh()
-      if attr not in self._v1_current_data.keys():
+      if attr not in list(self._v1_current_data.keys()):
         self._v1_current_data[attr] = self._v1_get_single_attr(attr)
       value = self._v1_current_data[attr]
     return value

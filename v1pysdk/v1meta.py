@@ -3,10 +3,10 @@ try:
 except ImportError:
     from elementtree import ElementTree
 
-from client import *
-from base_asset import BaseAsset
-from cache_decorator import memoized
-from special_class_methods import special_classes
+from .client import *
+from .base_asset import BaseAsset
+from .cache_decorator import memoized
+from .special_class_methods import special_classes
 
 
 class V1Meta(object):        
@@ -85,14 +85,14 @@ class V1Meta(object):
       for asset in self.dirtylist:
           try:
               asset._v1_commit()
-          except V1Error, e:
+          except V1Error as e:
               errors.append(e)          
           self.dirtylist = []
       return errors
     
   def generate_update_doc(self, newdata):
     update_doc = Element('Asset')
-    for attrname, newvalue in newdata.items():
+    for attrname, newvalue in list(newdata.items()):
       if isinstance(newvalue, BaseAsset):
         node = Element('Relation')
         node.set('name', attrname)

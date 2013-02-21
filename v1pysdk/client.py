@@ -1,9 +1,10 @@
 
 import logging, time, base64
-import urllib2
-from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler
-from urllib import urlencode
-from urlparse import urlunparse
+import urllib.request, urllib.error, urllib.parse
+from urllib.request import Request, urlopen, HTTPBasicAuthHandler
+from urllib.error import HTTPError
+from urllib.parse import urlencode
+from urllib.parse import urlunparse
 
 try:
     from xml.etree import ElementTree
@@ -38,10 +39,10 @@ class V1Server(object):
         
   def _install_opener(self):
     base_url = self.build_url('')
-    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(None, base_url, self.username, self.password)
     handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
-    self.opener = urllib2.build_opener(*handlers)
+    self.opener = urllib.request.build_opener(*handlers)
 
   def http_get(self, url):
     request = Request(url)
@@ -73,7 +74,7 @@ class V1Server(object):
         response = self.http_get(url)
       body = response.read()
       return (None, body)
-    except HTTPError, e:
+    except HTTPError as e:
       if e.code == 401:
           raise
       body = e.fp.read()

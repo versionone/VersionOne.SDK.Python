@@ -1,5 +1,5 @@
 
-from urllib import urlencode
+from urllib.parse import urlencode
 
 class V1Query(object):
   """A fluent query object. Use .select() and .where() to add items to the
@@ -33,7 +33,7 @@ class V1Query(object):
       return ','.join(self.sel_list)
 
   def get_where_string(self):
-      terms = list("{0}='{1}'".format(attrname, criteria) for attrname, criteria in self.where_terms.items())
+      terms = list("{0}='{1}'".format(attrname, criteria) for attrname, criteria in list(self.where_terms.items()))
       if self.where_string:
           terms.append(self.where_string)
       return ';'.join(terms)

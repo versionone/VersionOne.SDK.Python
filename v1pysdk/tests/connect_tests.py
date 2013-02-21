@@ -9,8 +9,8 @@ class TestV1Connection(TestCase):
   def test_connect(self, username='admin', password='admin'):
     server = V1Server(username=username, password=password)
     code, body = server.get('/rest-1.v1/Data/Story')
-    print "\n\nCode: ", code
-    print "Body: ", body
+    print("\n\nCode: ", code)
+    print("Body: ", body)
     elem = fromstring(body)
     self.assertThat(elem.tag, Equals('Assets'))
 
