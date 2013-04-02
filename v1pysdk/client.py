@@ -4,6 +4,7 @@ import urllib2
 from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler
 from urllib import urlencode
 from urlparse import urlunparse
+import httplib2
 
 try:
     from xml.etree import ElementTree
@@ -12,46 +13,53 @@ except ImportError:
     from elementtree import ElementTree
     from elementtree.ElementTree import Element
 
-AUTH_HANDLERS = [HTTPBasicAuthHandler]
-
-try:
-    from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
-    AUTH_HANDLERS.append(HTTPNtlmAuthHandler)
-except ImportError:
-    logging.warn("Windows integrated authentication module (ntlm) not found.")
-
+import oauth2client
+import oauth2client.clientsecrets
+from oauth2client.file import Storage
+from oauth2client.client import OAuth2WebServerFlow
+from oauth2client.client import flow_from_clientsecrets
 
 
 class V1Error(Exception): pass
 
 class V1AssetNotFoundError(V1Error): pass
 
+class V1OAuth2Error(V1Error): pass
+
+class V1Oauth2CredentialsError(V1OAuth2Error): pass
+
+class V1Oauth2ClientSecretsError(V1OAuth2Error): pass
+
+
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
+  API_PATH="/rest-1.oauth.v1"
 
-  def __init__(self, address='localhost', instance='VersionOne.Web', username='', password=''):
+  def __init__(self, address='localhost', instance='VersionOne.Web', client_secrets_file="client_secrets.json", stored_credentials_file="stored_credentials.json"):
     self.address = address
     self.instance = instance
-    self.username = username
-    self.password = password
-    self._install_opener()
-        
-  def _install_opener(self):
-    base_url = self.build_url('')
-    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    password_manager.add_password(None, base_url, self.username, self.password)
-    handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
-    self.opener = urllib2.build_opener(*handlers)
+    self.creds_storage = Storage(stored_credentials_file)
+    try:
+      self.flow = flow_from_clientsecrets(client_secrets_file,
+            scope='apiv1',
+            redirect_uri='urn:ietf:wg:oauth:2.0:oob'
+            )
+    except oauth2client.clientsecrets.InvalidClientSecretsError:
+      raise V1Oauth2ClientSecretsError("Stored client secrets file not found. Please use the command line tool to obtain it. For more information see http://docs.versionone.com/oauth2/something")
+    self.httpclient = httplib2.Http()
+    credentials = self.creds_storage.get()
+    if not credentials:
+      raise V1Oauth2CredentialsError("Stored client credentials not found. Please use the command line tool to obtain them. For more information see http://docs.versionone.com/oauth2/something")
+    credentials.authorize(self.httpclient)
+    logging.debug("Client has been authorized.")
+    logging.debug(credentials)
+    logging.debug(self.flow)
 
   def http_get(self, url):
-    request = Request(url)
-    response = self.opener.open(request)
-    return response
+    return self.httpclient.request(url, "GET")
   
   def http_post(self, url, data=''):
-    request = Request(url, data)
-    response = self.opener.open(request)
-    return response
+    return self.httpclient.request(url, 'POST', body=data)
     
   def build_url(self, path, query='', fragment='', params='', port=80):
     "So we dont have to interpolate urls ad-hoc"
@@ -64,40 +72,30 @@ class V1Server(object):
   def fetch(self, path, query='', postdata=None):
     "Perform an HTTP GET or POST depending on whether postdata is present"
     url = self.build_url(path, query=query)
-    try:
-      if postdata is not None:
-          if isinstance(postdata, dict):
-              postdata = urlencode(postdata)
-          response = self.http_post(url, postdata)
-      else:
-        response = self.http_get(url)
-      body = response.read()
-      return (None, body)
-    except HTTPError, e:
-      if e.code == 401:
-          raise
-      body = e.fp.read()
-      return (e, body)
+    logging.debug(url)
+    if postdata is not None:
+        if isinstance(postdata, dict):
+            postdata = urlencode(postdata)
+        return self.http_post(url, postdata)
+    return self.http_get(url)
       
   def get_xml(self, path, query='', postdata=None):
-    exception, body = self.fetch(path, query=query, postdata=postdata)
+    response, body = self.fetch(path, query=query, postdata=postdata)
     document = ElementTree.fromstring(body)
-    if exception:
-      exception.xmldoc = document
-      if exception.code == 404:
-        raise V1AssetNotFoundError(exception)
-      elif exception.code == 400:
-        raise V1Error('\n'+body)
-      else:
-        raise V1Error(exception)
+    if response.status == 404:
+      raise V1AssetNotFoundError(response.reason)
+    elif response.status == 400:
+      raise V1Error('\n'+body)
+    elif response.status >= 400:
+      raise V1Error(response)
     return document
    
   def get_asset_xml(self, asset_type_name, oid):
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    path = self.API_PATH + '/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path)
     
   def get_query_xml(self, asset_type_name, where=None, sel=None):
-    path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
+    path = self.API_PATH + '/Data/{0}'.format(asset_type_name)
     query = {}
     if where is not None:
         query['Where'] = where
@@ -110,12 +108,12 @@ class V1Server(object):
     return self.get_xml(path)
     
   def execute_operation(self, asset_type_name, oid, opname):
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    path = self.API_PATH + '/Data/{0}/{1}'.format(asset_type_name, oid)
     query = {'op': opname}
     return self.get_xml(path, query=query, postdata={})
     
   def get_attr(self, asset_type_name, oid, attrname):
-    path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
+    path = self.API_PATH + '/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
     return self.get_xml(path)
   
   def create_asset(self, asset_type_name, xmldata, context_oid=''):
@@ -123,12 +121,12 @@ class V1Server(object):
     query = {}
     if context_oid:
       query = {'ctx': context_oid}
-    path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
+    path = self.API_PATH + '/Data/{0}'.format(asset_type_name)
     return self.get_xml(path, query=query, postdata=body)
     
   def update_asset(self, asset_type_name, oid, update_doc):
     newdata = ElementTree.tostring(update_doc, encoding='utf-8')
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    path = self.API_PATH + '/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path, postdata=newdata)
 
 

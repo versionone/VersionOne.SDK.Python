@@ -40,7 +40,7 @@ class V1Query(object):
             
   def run_single_query(self, url_params={}, api="Data"):
       urlquery = urlencode(url_params)
-      urlpath = '/rest-1.v1/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
+      urlpath = self.asset_class._v1_v1meta.server.API_PATH + '/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
       # warning: tight coupling ahead
       xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
       return xml
