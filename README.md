@@ -15,6 +15,18 @@ as the authors see fit.
 
 ## Overview
 
+
+### Authenticating via Oauth2
+
+  We recommend using Oauth 2.0 to authenticate with the VersionOne instance.  This prevents your client
+  from storing user credentials, and allows the user to manage permissions for multiple registered client applications.
+
+  This library uses Google's oauth2 library and its secrets and credentials file formats.
+  You must use another tool that writes these files before this library can be used to gain access to a VersionOne instance.
+  Once the files exist and are valid, authentication is automatic based on the stored secrets and credentials.
+
+  Our brief Oauth2 example program can be used to write that file. See https://github.com/versionone/versionone-oauth2-examples/tree/master/python27
+
 ### Dynamic reflection of all V1 asset types:
 
   Just instantiate a V1Meta.  All asset types defined on the server are available
@@ -24,13 +36,11 @@ as the authors see fit.
   
       from v1pysdk import V1Meta
       
-      v1 = V1Meta()  # Assumes localhost/VersionOne.Web, credentials Admin/Admin
+      v1 = V1Meta()  # Assumes localhost/VersionOne.Web
       
       v1 = V1Meta(
              address = 'v1server.mycompany.com',
-             instance = 'VersionOne',
-             username = 'jsmith',
-             password = 'swordfish'
+             instance = 'VersionOne'
              )
 
       Story = v1.Story
@@ -198,7 +208,7 @@ as the authors see fit.
   GOTCHA: All "required" attributes must be set, or the server will reject the data.
   
       from v1pysdk import V1Meta
-      v1 = V1Meta(username='admin', password='admin')
+      v1 = V1Meta()
       new_story = v1.Story.create(
         Name = 'New Story',
         Scope = v1.Scope.where(Name='2012 Projects').first()
