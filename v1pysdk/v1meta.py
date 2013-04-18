@@ -144,19 +144,25 @@ class V1Meta(object):
     
   def unpack_asset(self, xml):
     output = {}
+    self.unpack_asset_relations(output, xml)
+    self.unpack_asset_attributes(output, xml)
+    return output
+  
+  def unpack_asset_attributes(self, output, xml):
     for attribute in xml.findall('Attribute'):
       #key = attribute.get('name').replace('.','_')
       key = attribute.get('name')
-      values = attribute.findall('Value')
-      if values:
-          value = [v.text for v in values]
-      else:
-          value = attribute.text
-      if value is None:
-          value = []  # it's either empty or a relation with zero items
-      output[key] = value
+      values = [v.text for v in attribute.findall('Value')]
+      if len(values) == 0:
+        values = [attribute.text]
+      
+      self.add_attribute_to_output(output, key, values)
 
-    for relation in xml.findall('Relation'):
+  def unpack_asset_relations(self, output, xml):
+  
+    # we sort relations in order to insert the shortest ones first, so that
+    # containing relations are added before leaf ones.
+    for relation in sorted(xml.findall('Relation'), key=lambda x: x.get('name')):
       key = relation.get('name')
       related_asset_elements = relation.findall('Asset')
       rellist = []
@@ -164,9 +170,60 @@ class V1Meta(object):
         relation_idref = value_element.get('idref')
         value = self.asset_from_oid(relation_idref)
         rellist.append(value)
-      output[key] = rellist
-    return output
-    
+      self.add_relation_to_output(output, key, rellist)
+
+  def add_relation_to_output(self, output, relation, assets):
+    if self.is_attribute_qualified(relation):
+      (container, leaf) = self.split_relation_to_container_and_leaf(relation)
+
+      asset = self.get_related_asset(output, container)
+
+      # asset may be unset because the reference is broken
+      if asset:
+        asset.with_data({leaf: assets})
+    else:
+      output[relation] = assets
+
+  def add_attribute_to_output(self, output, relation, values):
+    if self.is_attribute_qualified(relation):
+      (container, leaf) = self.split_relation_to_container_and_leaf(relation)
+
+      for (asset, value) in zip(self.get_related_assets(output, container), values):
+        asset.with_data({leaf: value})
+    else:
+      output[relation] = values[0]
+      
+  def is_attribute_qualified(self, relation):
+    return relation.find('.') >= 0
+  
+  def split_relation_to_container_and_leaf(self, relation):
+    parts = relation.split('.')
+    return ('.'.join(relation.split('.')[:-1]), parts[-1])
+  
+  def get_related_assets(self, output, relation):
+    if self.is_attribute_qualified(relation):
+      parts = relation.split('.')
+
+      assets = output[parts[0]]
+
+      for part in parts[1:]:
+        try:
+          asset = assets[0]
+        except IndexError:
+          return []
+
+        assets = asset._v1_getattr(part)
+      return assets
+    else:
+      return output[relation]
+  
+  def get_related_asset(self, output, relation):
+    assets = self.get_related_assets(output, relation)
+    try:
+      return assets[0]
+    except IndexError:
+      return None
+  
   def asset_from_oid(self, oidtoken):
     asset_type, asset_id = oidtoken.split(':')[:2]
     AssetClass = self.asset_class(asset_type)

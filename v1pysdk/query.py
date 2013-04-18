@@ -66,7 +66,12 @@ class V1Query(object):
     """Add attribute names to the select list for this query. The attributes
     in the select list will be returned in the query results, and can be used
     without further network traffic"""
-    self.sel_list.extend(args)
+    
+    for sel in args:
+      parts = sel.split('.')
+      for i in range(1, len(parts)):
+        self.sel_list.append('.'.join(parts[:i]))
+      self.sel_list.append(sel)
     return self
     
   def where(self, terms={}, **kw):
