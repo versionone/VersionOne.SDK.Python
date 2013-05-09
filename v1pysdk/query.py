@@ -54,9 +54,14 @@ class V1Query(object):
       url_params['where'] = self.get_where_string()
     if self.asof_list:
       for asof in self.asof_list:
+        if asof:
           url_params['asof'] = str(asof)
-          xml = self.run_single_query(url_params, "Hist")
-          self.query_results.append((xml, asof))
+          api = "Hist"
+        else:
+          del url_params['asof']
+          api = "Data"
+        xml = self.run_single_query(url_params, api=api)
+        self.query_results.append((xml, asof))
     else:
       xml = self.run_single_query(url_params)
       self.query_results.append((xml, None))
