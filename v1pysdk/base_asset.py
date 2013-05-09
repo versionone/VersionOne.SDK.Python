@@ -33,8 +33,8 @@ class BaseAsset(object):
     "Find or instantiate an object and fill it with data that just came back from query"
     idref = xml.get('id')
     data = Class._v1_v1meta.unpack_asset(xml)
-    data['AsOf'] = asof
     instance = Class._v1_v1meta.asset_from_oid(idref)
+    instance.AsOf = asof
     return instance.with_data(data)
 
   @classmethod
