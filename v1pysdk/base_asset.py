@@ -35,6 +35,7 @@ class BaseAsset(object):
     data = Class._v1_v1meta.unpack_asset(xml)
     instance = Class._v1_v1meta.asset_from_oid(idref)
     instance.AsOf = asof
+    data['AsOf'] = asof
     return instance.with_data(data)
 
   @classmethod
