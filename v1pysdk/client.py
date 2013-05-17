@@ -1,7 +1,7 @@
 
 import logging, time, base64
 import urllib2
-from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler
+from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler, HTTPCookieProcessor
 from urllib import urlencode
 from urlparse import urlunparse
 
@@ -42,6 +42,7 @@ class V1Server(object):
     password_manager.add_password(None, base_url, self.username, self.password)
     handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
     self.opener = urllib2.build_opener(*handlers)
+    self.opener.add_handler(HTTPCookieProcessor())
 
   def http_get(self, url):
     request = Request(url)
