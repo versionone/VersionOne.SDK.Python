@@ -1,12 +1,10 @@
 
 
-
-
 from setuptools import setup, find_packages
 
 setup(
   name = "v1pysdk",
-  version = "0.2",  
+  version = "0.3",  
   description = "VersionOne API client",  
   author = "Joe Koberg (VersionOne, Inc.)",
   author_email = "Joe.Koberg@versionone.com",

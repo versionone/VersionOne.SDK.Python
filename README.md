@@ -13,6 +13,7 @@ under a modified BSD license, which reflects our intent that software
 built with a dependency on v1pysdk can be commercial or open source, 
 as the authors see fit.
 
+
 ## Overview
 
 ### Dynamic reflection of all V1 asset types:
@@ -336,6 +337,22 @@ as the authors see fit.
 #### Installation
 
 run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONPATH.
+
+
+#### Revision History
+
+
+2013-07-09 v0.3 - To support HTTPS, A "scheme" argument has been added to the V1Meta and V1Client
+  constructors.
+
+  An instance_url keyword argument was added to V1Meta and V1Client. This argument can be
+  specified instead of the address, instance_path, scheme, and port arguments.
+
+  A performance enhancement was made to calls such as "list(v1.Story.Name)".  The requested
+  attribute is added to the select list if it's not present, thus preventing an HTTP GET
+  for each matched asset.
+
+  Some poor examples were removed and logging cleaned up in places.
 
 
 ## License ##
