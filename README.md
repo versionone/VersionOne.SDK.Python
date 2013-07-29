@@ -354,6 +354,10 @@ run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONP
 
   Some poor examples were removed and logging cleaned up in places.
 
+  Fix some issues with NTLM and urllib2. (thanks campbellr)
+
+  Missing attributes now return a None-like object can be deferenced to any depth. (thanks bazsi)
+
 
 ## License ##
 
