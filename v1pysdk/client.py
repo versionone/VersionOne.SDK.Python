@@ -90,7 +90,12 @@ class V1Server(object):
       return (e, body)
       
   def get_xml(self, path, query='', postdata=None):
+    verb = "HTTP POST to " if postdata else "HTTP GET from "
+    msg = verb + path
+    logging.info(msg)
     exception, body = self.fetch(path, query=query, postdata=postdata)
+    if exception:
+      logging.warn("{0} during {1}".format(exception, msg))
     document = ElementTree.fromstring(body)
     if exception:
       exception.xmldoc = document
