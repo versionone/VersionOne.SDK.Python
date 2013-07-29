@@ -119,10 +119,12 @@ class BaseAsset(object):
           
   def __repr__(self):
     out = self.reprref
-    if self._v1_current_data:
-        out += '.with_data({0})'.format(self.repr_shallow(self._v1_current_data))
-    if self._v1_new_data:
-      out += '.pending({0})'.format(self.repr_shallow(self._v1_new_data))
+    shallowdata = self.repr_shallow(self._v1_current_data)
+    if shallowdata != '{}':
+        out += '.with_data({0})'.format(shallowdata)
+    shallownew = self.repr_shallow(self._v1_new_data)
+    if shallownew != '{}':
+      out += '.pending({0})'.format(shallownew)
     return out
     
   def _v1_getattr(self, attr):
