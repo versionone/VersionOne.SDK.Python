@@ -55,11 +55,13 @@ class V1Server(object):
 
   def http_get(self, url):
     request = Request(url)
+    request.add_header("Content-Type", "text/xml;charset=UTF-8")
     response = self.opener.open(request)
     return response
   
   def http_post(self, url, data=''):
     request = Request(url, data)
+    request.add_header("Content-Type", "text/xml;charset=UTF-8")
     response = self.opener.open(request)
     return response
     
