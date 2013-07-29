@@ -15,8 +15,7 @@ class V1Query(object):
     self.query_results = []
     self.query_has_run = False
     self.sel_string = sel_string
-    if sel_string is not None:
-        self.empty_sel = False    
+    self.empty_sel = sel_string is None
     self.where_string = filterexpr
     
   def __iter__(self):
