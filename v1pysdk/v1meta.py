@@ -7,7 +7,7 @@ from client import *
 from base_asset import BaseAsset
 from cache_decorator import memoized
 from special_class_methods import special_classes
-
+from none_deref import NoneDeref
 
 class V1Meta(object):        
   def __init__(self, *args, **kw):
@@ -54,6 +54,8 @@ class V1Meta(object):
             v = self._v1_getattr(attr)
             if v:
               return self._v1_getattr(attr)[0]
+            else:
+              return NoneDeref()
           def setter(self, value, attr=attr):
             return self._v1_setattr(attr, [value])
           def deleter(self, attr=attr):
