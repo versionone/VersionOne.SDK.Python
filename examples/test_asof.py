@@ -23,8 +23,8 @@ def as_of_times(start, end, hoursper=6):
     current += datetime.timedelta(hours=hoursper)
 
 if __name__=="__main__":
-    username, password, sprintName, outputFolder = sys.argv[1:5]
-    with V1Meta('www7.v1host.com', 'V1Production', username, password) as v1:
+    username, password, sprintName, outputFolder = sys.argv[1:3]
+    with V1Meta(instance_url="https://www7.v1host.com/V1Production", username=username, password=password) as v1:
         timebox = (v1.Timebox
                      .where(Name=sprintName)
                      .select("BeginDate", "EndDate")

@@ -3,13 +3,11 @@ import sys
 from v1pysdk import V1Meta
 
 try:
-  server, instance_path, username, password = sys.argv[1:5]
+  url, username, password = sys.argv[1:3]
 except ValueError:
   print("Please supply command line arguments")
 
-
-
-v1 = V1Meta(server, instance_path, username, password)
+v1 = V1Meta(instance_url=url, username=username, password=password)
 
 
 story = v1.Story.create(
