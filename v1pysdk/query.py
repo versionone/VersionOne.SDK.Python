@@ -107,5 +107,7 @@ class V1Query(object):
       
   def __getattr__(self, attrname):
     "return a sequence of the attribute from all matched results "
+    if attrname not in self.sel_list:
+      self.select(attrname)
     return (getattr(i, attrname) for i in self)
 
