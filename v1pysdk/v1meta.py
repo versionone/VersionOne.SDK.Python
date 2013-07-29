@@ -10,8 +10,8 @@ from special_class_methods import special_classes
 
 
 class V1Meta(object):        
-  def __init__(self, address='localhost', instance='VersionOne.Web', username='admin', password='admin'):
-    self.server = V1Server(address, instance, username, password)
+  def __init__(self, *args, **kw):
+    self.server = V1Server(*args, **kw)
     self.global_cache = {}
     self.dirtylist = []
     

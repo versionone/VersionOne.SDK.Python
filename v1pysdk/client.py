@@ -3,7 +3,7 @@ import logging, time, base64
 import urllib2
 from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler, HTTPCookieProcessor
 from urllib import urlencode
-from urlparse import urlunparse
+from urlparse import urlunparse, urlparse
 
 try:
     from xml.etree import ElementTree
@@ -29,9 +29,18 @@ class V1AssetNotFoundError(V1Error): pass
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
 
-  def __init__(self, address='localhost', instance='VersionOne.Web', username='', password=''):
-    self.address = address
-    self.instance = instance
+  def __init__(self, address="localhost", instance="VersionOne.Web", username='', password='', scheme="http", instance_url=None):
+    if instance_url:
+      self.instance_url = instance_url
+      parsed = urlparse(instance_url)
+      self.address = parsed.netloc
+      self.instance = parsed.path.strip('/')
+      self.scheme = parsed.scheme
+    else:
+      self.address = address
+      self.instance = instance.strip('/')
+      self.scheme = scheme
+      self.instance_url = self.build_url('')
     self.username = username
     self.password = password
     self._install_opener()
@@ -54,12 +63,12 @@ class V1Server(object):
     response = self.opener.open(request)
     return response
     
-  def build_url(self, path, query='', fragment='', params='', port=80):
+  def build_url(self, path, query='', fragment='', params=''):
     "So we dont have to interpolate urls ad-hoc"
-    path = self.instance + path
+    path = self.instance + '/' + path.strip('/')
     if isinstance(query, dict):
       query = urlencode(query)
-    url = urlunparse( ('http', self.address, path, params, query, fragment) )
+    url = urlunparse( (self.scheme, self.address, path, params, query, fragment) )
     return url
     
   def fetch(self, path, query='', postdata=None):
