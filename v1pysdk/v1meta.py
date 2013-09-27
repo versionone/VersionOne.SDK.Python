@@ -108,7 +108,7 @@ class V1Meta(object):
         for item in newvalue:
           child = Element('Asset')
           child.set('idref', item.idref)
-          child.set('act', 'set')
+          child.set('act', 'add')
           node.append(child)
       else:
         node = Element('Attribute')
