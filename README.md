@@ -344,6 +344,10 @@ run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONP
 ## Revision History
 
 
+2013-09-27 v0.4 - A correction has been made to the multi-valued relation setter code.  It used the
+  wrong value for the XML "act" attribute, so multi-value attributes never got set correctly.  Note
+  that at this time, there is no way to un-set a value from a multi-valued relation.
+
 2013-07-09 v0.3 - To support HTTPS, A "scheme" argument has been added to the V1Meta and V1Client
   constructors.
 
