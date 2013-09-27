@@ -11,7 +11,7 @@ This product includes software developed at VersionOne
 (http://versionone.com/). This product is open source and is licensed 
 under a modified BSD license, which reflects our intent that software 
 built with a dependency on v1pysdk can be commercial or open source, 
-as the authors see fit.
+as the authors see fit. Please see LICENSE.md .
 
 
 ## Overview
@@ -160,7 +160,7 @@ as the authors see fit.
           
 #### Advanced query, taking the standard V1 query syntax.
 
-  The "query" operator will take arbitrary V1 "where" terms for filtering.
+  The "filter" operator will take arbitrary V1 filter terms.
 
       for s in (v1.Story
                   .filter("Estimate>'5',TotalDone.@Count<'10'")
@@ -186,12 +186,14 @@ as the authors see fit.
 
   get a list of all the stories dedicated people are working on
 
-  writer = csv.writer(outfile)
-  results = (v1.Story
-               .select('Name', 'CreateDate', 'Estimate', 'Owners.Name')
-               .filter("Owners.OwnedWorkitems.@Count='1'"))
-  for result in results:
-     writer.writerow((result['Name'], ', '.join(result['Owners.Name'])))
+      writer = csv.writer(outfile)
+      results = (
+        v1.Story
+          .select('Name', 'CreateDate', 'Estimate', 'Owners.Name')
+          .filter("Owners.OwnedWorkitems.@Count='1'")
+          )
+      for result in results:
+          writer.writerow((result['Name'], ', '.join(result['Owners.Name'])))
                       
       
 ### Simple creation syntax:
@@ -334,12 +336,12 @@ as the authors see fit.
   
   * Correctly handle multi-valued attributes including removal of values.
     
-#### Installation
+## Installation
 
 run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONPATH.
 
 
-#### Revision History
+## Revision History
 
 
 2013-07-09 v0.3 - To support HTTPS, A "scheme" argument has been added to the V1Meta and V1Client
