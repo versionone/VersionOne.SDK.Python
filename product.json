@@ -1,0 +1,78 @@
+{
+    "id": "VersionOne.SDK.Python",
+    "titleSection": {
+        "name": "VersionOne SDK.Python (v1pysdk)",
+        "shortDescription": "A Python client for accessing the VersionOne rest-1.v1 endpoint.",
+        "pricing": "Free",
+        "support": {
+            "text": "VersionOne",
+            "href": "http://support.versionone.com/home"
+        }
+    },
+    "descriptionSection": {
+        "description": "v1pysdk is a client for the VersionOne rest-1.v1 API endpoint."
+    },
+    "linksSection": [
+        {
+            "type": "documentation",
+            "title": "README",
+            "href": "https://github.com/versionone/VersionOne.SDK.Python/blob/master/README.md"
+        },
+        {
+            "type": "source",
+            "title": "GitHub Project for Source Code and Issues",
+            "href": "https://github.com/versionone/VersionOne.SDK.Python"
+        },
+        {
+            "type": "license",
+            "title": "Modified BSD (3 clause) License",
+            "href": "https://github.com/versionone/VersionOne.SDK.Python/blob/master/LICENSE.md"
+        }
+    ],
+    "updatesSection": {
+        "updates": [
+            {
+                "date": "2013-09-27T12:00:00.000Z",
+                "description": "Fall 2013",
+                "version": "0.4",
+                "releaseNotes": "Fixed: Setters. A correction has been made to the multi-valued relation setter code. It used the wrong value for the XML "act" attribute, so multi-value attributes never got set correctly. Note that at this time, there is no way to un-set a value from a multi-valued relation.",
+                "qualityBand": "seed"
+            },
+            {
+                "date": "2013-07-09T12:00:00.000Z",
+                "description": "Summer 2013",
+                "version": "0.3",
+                "releaseNotes": "* Added: Support for HTTPS. A scheme argument has been added to the V1Meta and V1Client constructors.\n* Added: instance_url. An instance_url keyword argument was added to V1Meta and V1Client. This argument can be specified instead of the address, instance_path, scheme, and port arguments.\n* Improved: Performance. A performance enhancement was made to calls such as "list(v1.Story.Name)". The requested attribute is added to the select list if it's not present, thus preventing an HTTP GET for each matched asset.\n* Improved: Examples. Some poor examples were removed and logging cleaned up in places.\n* Fix: NTLM. Fix some issues with NTLM and urllib2. (thanks campbellr)\n* Fix: Deferencing. Missing attributes now return a None-like object can be deferenced to any depth. (thanks bazsi)",
+                "qualityBand": "seed"
+            },
+            {
+                "date": "2012-09-19T12:00:00.000Z",
+                "description": "Fall 2012",
+                "version": "0.2",
+                "releaseNotes": "Bug fixes.",
+                "qualityBand": "seed"
+            },
+            {
+                "date": "2012-05-08T12:00:00.000Z",
+                "description": "Spring 2012",
+                "version": "0.1",
+                "releaseNotes": "Initial code.",
+                "qualityBand": "seed"
+            }
+        ],
+        "qualityBands": {
+            "seed": {
+                "shortDescription": "Early access build. Use with caution.",
+                "href": "https://github.com/versionone/VersionOne.SDK.Python/blob/master/CONTRIBUTING.md#seed"
+            },
+            "sapling": {
+                "shortDescription": "The product is undergoing rapid growth. The code works but expect major changes.",
+                "href": "https://github.com/versionone/VersionOne.SDK.Python/blob/master/CONTRIBUTING.md#sapling"
+            },
+            "mature": {
+                "shortDescription": "The product is stable. The code will continue to evolve with minimum breaking changes.",
+                "href": "https://github.com/versionone/VersionOne.SDK.Python/blob/master/CONTRIBUTING.md#mature"
+            }
+        }
+    }
+}

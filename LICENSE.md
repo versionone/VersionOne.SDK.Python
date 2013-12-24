@@ -1,5 +1,5 @@
-# VersionOne v1pysdk License #
-Copyright (c) 2012 VersionOne, Inc.
+# VersionOne SDK.Python
+Copyright (c) 2012-2013 VersionOne, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
