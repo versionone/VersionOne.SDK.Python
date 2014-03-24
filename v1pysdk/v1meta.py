@@ -57,7 +57,7 @@ class V1Meta(object):
             else:
               return NoneDeref()
           def setter(self, value, attr=attr):
-            return self._v1_setattr(attr, [value])
+            return self._v1_setattr(attr, value)
           def deleter(self, attr=attr):
             raise NotImplementedError
       else:
@@ -95,14 +95,18 @@ class V1Meta(object):
   def generate_update_doc(self, newdata):
     update_doc = Element('Asset')
     for attrname, newvalue in newdata.items():
-      if isinstance(newvalue, BaseAsset):
+      if newvalue is None: # single relation was removed
+        node = Element('Relation')
+        node.set('name', attrname)
+        node.set('act', 'set')
+      elif isinstance(newvalue, BaseAsset): # single relation was changed
         node = Element('Relation')
         node.set('name', attrname)
         node.set('act', 'set')
         ra = Element('Asset')
         ra.set('idref', newvalue.idref)
         node.append(ra)
-      elif isinstance(newvalue, list):
+      elif isinstance(newvalue, list): # multi relation was changed
         node = Element('Relation')
         node.set('name', attrname)
         for item in newvalue:
@@ -110,7 +114,7 @@ class V1Meta(object):
           child.set('idref', item.idref)
           child.set('act', 'add')
           node.append(child)
-      else:
+      else: # Not a relation
         node = Element('Attribute')
         node.set('name', attrname)
         node.set('act', 'set')

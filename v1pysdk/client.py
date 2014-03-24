@@ -116,6 +116,7 @@ class V1Server(object):
     exception, body = self.fetch(path, query=query, postdata=postdata)
     if exception:
       logging.warn("{0} during {1}".format(exception, msg))
+      logging.warn(postdata)
     document = ElementTree.fromstring(body)
     if exception:
       exception.xmldoc = document
