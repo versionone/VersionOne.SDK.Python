@@ -195,7 +195,11 @@ class V1Meta(object):
       (container, leaf) = self.split_relation_to_container_and_leaf(relation)
 
       for (asset, value) in zip(self.get_related_assets(output, container), values):
-        asset.with_data({leaf: value})
+         # for calculated values it is not an asset so take the value directly
+        if hasattr(asset, 'with_data'):
+          asset.with_data({leaf: value})
+        else:
+          output[relation] = value
     else:
       output[relation] = values[0]
       
