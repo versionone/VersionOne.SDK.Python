@@ -8,6 +8,7 @@ from base_asset import BaseAsset
 from cache_decorator import memoized
 from special_class_methods import special_classes
 from none_deref import NoneDeref
+from query import attrstring_splitter
 
 class V1Meta(object):        
   def __init__(self, *args, **kw):
@@ -165,7 +166,7 @@ class V1Meta(object):
       self.add_attribute_to_output(output, key, values)
 
   def unpack_asset_relations(self, output, xml):
-  
+
     # we sort relations in order to insert the shortest ones first, so that
     # containing relations are added before leaf ones.
     for relation in sorted(xml.findall('Relation'), key=lambda x: x.get('name')):
@@ -204,15 +205,16 @@ class V1Meta(object):
       output[relation] = values[0]
       
   def is_attribute_qualified(self, relation):
-    return relation.find('.') >= 0
+    parts = attrstring_splitter(relation)
+    return len(parts) > 1
   
   def split_relation_to_container_and_leaf(self, relation):
-    parts = relation.split('.')
-    return ('.'.join(relation.split('.')[:-1]), parts[-1])
+    parts = attrstring_splitter(relation)
+    return ('.'.join(parts[:-1]), parts[-1])
   
   def get_related_assets(self, output, relation):
     if self.is_attribute_qualified(relation):
-      parts = relation.split('.')
+      parts = attrstring_splitter(relation)
 
       assets = output[parts[0]]
 
