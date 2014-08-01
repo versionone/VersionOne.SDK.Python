@@ -1,5 +1,5 @@
-
 from urllib import urlencode
+from string_utils import split_attribute
 
 class V1Query(object):
   """A fluent query object. Use .select() and .where() to add items to the
@@ -72,7 +72,7 @@ class V1Query(object):
     without further network traffic"""
     
     for sel in args:
-      parts = sel.split('.')
+      parts = split_attribute(sel)
       for i in range(1, len(parts)):
         self.sel_list.append('.'.join(parts[:i]))
       self.sel_list.append(sel)

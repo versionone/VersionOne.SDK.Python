@@ -8,6 +8,7 @@ from base_asset import BaseAsset
 from cache_decorator import memoized
 from special_class_methods import special_classes
 from none_deref import NoneDeref
+from string_utils import split_attribute
 
 class V1Meta(object):        
   def __init__(self, *args, **kw):
@@ -204,15 +205,16 @@ class V1Meta(object):
       output[relation] = values[0]
       
   def is_attribute_qualified(self, relation):
-    return relation.find('.') >= 0
+    parts = split_attribute(relation)
+    return len(parts) > 1
   
   def split_relation_to_container_and_leaf(self, relation):
-    parts = relation.split('.')
-    return ('.'.join(relation.split('.')[:-1]), parts[-1])
+    parts = split_attribute(relation)
+    return ('.'.join(parts[:-1]), parts[-1])
   
   def get_related_assets(self, output, relation):
     if self.is_attribute_qualified(relation):
-      parts = relation.split('.')
+      parts = split_attribute(relation)
 
       assets = output[parts[0]]
 
