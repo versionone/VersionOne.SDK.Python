@@ -1,34 +1,5 @@
-
 from urllib import urlencode
-
-
-def attrstring_splitter(attrstring):
-    """
-    properly split apart attribute strings, even when they have sub-attributes declated between [].
-    :param attrstring:
-    :return: dict containing the elements of the top level attribute string.
-    Sub-attribute strings between '[]'s are appended to their parent, without processing, even if they contain '.'
-    """
-    ret = []
-    spl = attrstring.split('[')
-    while len(spl) > 1:
-        prefix = spl[0].split('.')
-        if len(prefix) > 1:
-            ret += prefix[(len(prefix) - 2):]
-            lastleaf = prefix[len(prefix)-1]
-        else:
-            lastleaf = prefix[0]
-        subp, postfix = spl[1].split(']')
-        ret.append("%s[%s]" % (lastleaf, subp))
-        spl.pop(0)
-        if postfix != '' and postfix[0] == '.':
-            postfix = postfix[1:]
-        spl[0] = postfix
-    if len(spl) == 1 and spl[0] != '':
-        ret += spl[0].split('.')
-
-    return ret
-
+from string_utils import split_attribute
 
 class V1Query(object):
   """A fluent query object. Use .select() and .where() to add items to the
@@ -101,7 +72,7 @@ class V1Query(object):
     without further network traffic"""
     
     for sel in args:
-      parts = attrstring_splitter(sel)
+      parts = split_attribute(sel)
       for i in range(1, len(parts)):
         self.sel_list.append('.'.join(parts[:i]))
       self.sel_list.append(sel)
