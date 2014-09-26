@@ -1,9 +1,7 @@
-
-
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
-  name = "v1pysdk",
+  name = "v1pysdk-unofficial",
   version = "0.4",  
   description = "VersionOne API client",  
   author = "Joe Koberg (VersionOne, Inc.)",
@@ -15,7 +13,7 @@ setup(
   packages = [
     'v1pysdk',
     ],  
-  
+  include_package_data=True,
   install_requires = [
     'elementtree',
     'testtools',
@@ -25,11 +23,4 @@ setup(
     
   test_suite = "v1pysdk.tests",
   
-  )
-
-
-
-
-
-
-
+)

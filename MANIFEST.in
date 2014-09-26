@@ -1,0 +1,7 @@
+include ACKNOWLEDGEMENTS.md
+include CONTRIBUTING.md
+include LICENSE.md
+include MANIFEST.in
+include README.md
+include product.json
+include build.properties
