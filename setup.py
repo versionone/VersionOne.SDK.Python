@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
   name = "v1pysdk-unofficial",
-  version = "0.4",  
+  version = "0.4.post1",  
   description = "VersionOne API client",  
   author = "Joe Koberg (VersionOne, Inc.)",
   author_email = "Joe.Koberg@versionone.com",
