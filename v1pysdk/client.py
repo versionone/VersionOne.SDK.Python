@@ -108,15 +108,26 @@ class V1Server(object):
           raise
       body = e.fp.read()
       return (e, body)
-      
+
+  def handle_non_xml_response(self, body, exception, msg, postdata):
+      if exception.code >= 500:
+        # 5XX error codes mean we won't have an XML response to parse
+        logging.error("{0} during {1}".format(exception, msg))
+        if postdata is not None:
+          logging.error(postdata)
+        raise exception
+
   def get_xml(self, path, query='', postdata=None):
     verb = "HTTP POST to " if postdata else "HTTP GET from "
     msg = verb + path
     logging.info(msg)
     exception, body = self.fetch(path, query=query, postdata=postdata)
     if exception:
+      self.handle_non_xml_response(body, exception, msg, postdata)
+
       logging.warn("{0} during {1}".format(exception, msg))
-      logging.warn(postdata)
+      if postdata is not None:
+         logging.warn(postdata)
     document = ElementTree.fromstring(body)
     if exception:
       exception.xmldoc = document
