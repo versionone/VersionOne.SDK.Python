@@ -90,23 +90,46 @@ class V1Server(object):
       query = urlencode(query)
     url = urlunparse( (self.scheme, self.address, path, params, query, fragment) )
     return url
-    
+
+  def _debug_headers(self, headers):
+    logging.debug("Headers:")
+    for hdr in str(headers).split('\n'):
+      logging.debug("  %s" % hdr)
+
+  def _debug_body(self, body, headers):
+    try:
+      ctype = headers['content-type']
+    except AttributeError:
+      ctype = None
+    if ctype is not None and ctype[:5] == 'text/':
+      logging.debug("Body:")
+      for line in str(body).split('\n'):
+        logging.debug("  %s" % line)
+    else:
+      logging.debug("Body: non-textual content (Content-Type: %s). Not logged." % ctype)
+
   def fetch(self, path, query='', postdata=None):
     "Perform an HTTP GET or POST depending on whether postdata is present"
     url = self.build_url(path, query=query)
+    logging.debug("URL: %s" % url)
     try:
       if postdata is not None:
           if isinstance(postdata, dict):
               postdata = urlencode(postdata)
+              logging.debug("postdata: %s" % postdata)
           response = self.http_post(url, postdata)
       else:
         response = self.http_get(url)
       body = response.read()
+      self._debug_headers(response.headers)
+      self._debug_body(body, response.headers)
       return (None, body)
     except HTTPError, e:
       if e.code == 401:
           raise
       body = e.fp.read()
+      self._debug_headers(e.headers)
+      self._debug_body(body, e.headers)
       return (e, body)
 
   def handle_non_xml_response(self, body, exception, msg, postdata):
