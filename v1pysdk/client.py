@@ -47,7 +47,7 @@ class V1AssetNotFoundError(V1Error): pass
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
 
-  def __init__(self, address="localhost", instance="VersionOne.Web", username='', password='', scheme="http", instance_url=None):
+  def __init__(self, address="localhost", instance="VersionOne.Web", username='', password='', scheme="http", instance_url=None, logparent=None, loglevel=logging.ERROR):
     if instance_url:
       self.instance_url = instance_url
       parsed = urlparse(instance_url)
@@ -59,6 +59,11 @@ class V1Server(object):
       self.instance = instance.strip('/')
       self.scheme = scheme
       self.instance_url = self.build_url('')
+
+    modulelogname='v1pysdk.client'
+    logname = "%s.%s" % (logparent, modulelogname) if logparent else None
+    self.logger = logging.getLogger(logname)
+    self.logger.setLevel(loglevel)
     self.username = username
     self.password = password
     self._install_opener()
@@ -92,9 +97,9 @@ class V1Server(object):
     return url
 
   def _debug_headers(self, headers):
-    logging.debug("Headers:")
+    self.logger.debug("Headers:")
     for hdr in str(headers).split('\n'):
-      logging.debug("  %s" % hdr)
+      self.logger.debug("  %s" % hdr)
 
   def _debug_body(self, body, headers):
     try:
@@ -102,21 +107,21 @@ class V1Server(object):
     except AttributeError:
       ctype = None
     if ctype is not None and ctype[:5] == 'text/':
-      logging.debug("Body:")
+      self.logger.debug("Body:")
       for line in str(body).split('\n'):
-        logging.debug("  %s" % line)
+        self.logger.debug("  %s" % line)
     else:
-      logging.debug("Body: non-textual content (Content-Type: %s). Not logged." % ctype)
+      self.logger.debug("Body: non-textual content (Content-Type: %s). Not logged." % ctype)
 
   def fetch(self, path, query='', postdata=None):
     "Perform an HTTP GET or POST depending on whether postdata is present"
     url = self.build_url(path, query=query)
-    logging.debug("URL: %s" % url)
+    self.logger.debug("URL: %s" % url)
     try:
       if postdata is not None:
           if isinstance(postdata, dict):
               postdata = urlencode(postdata)
-              logging.debug("postdata: %s" % postdata)
+              self.logger.debug("postdata: %s" % postdata)
           response = self.http_post(url, postdata)
       else:
         response = self.http_get(url)
@@ -135,22 +140,22 @@ class V1Server(object):
   def handle_non_xml_response(self, body, exception, msg, postdata):
       if exception.code >= 500:
         # 5XX error codes mean we won't have an XML response to parse
-        logging.error("{0} during {1}".format(exception, msg))
+        self.logger.error("{0} during {1}".format(exception, msg))
         if postdata is not None:
-          logging.error(postdata)
+          self.logger.error(postdata)
         raise exception
 
   def get_xml(self, path, query='', postdata=None):
     verb = "HTTP POST to " if postdata else "HTTP GET from "
     msg = verb + path
-    logging.info(msg)
+    self.logger.info(msg)
     exception, body = self.fetch(path, query=query, postdata=postdata)
     if exception:
       self.handle_non_xml_response(body, exception, msg, postdata)
 
-      logging.warn("{0} during {1}".format(exception, msg))
+      self.logger.warn("{0} during {1}".format(exception, msg))
       if postdata is not None:
-         logging.warn(postdata)
+         self.logger.warn(postdata)
     document = ElementTree.fromstring(body)
     if exception:
       exception.xmldoc = document
