@@ -58,9 +58,8 @@ class BaseAsset(object):
     "Tries to get an instance out of the cache first, otherwise creates one"
     cache_key = (Class._v1_asset_type_name, int(oid))
     cache = Class._v1_v1meta.global_cache
-    if cache.has_key(cache_key):
-      self = cache[cache_key]
-    else:
+    self = cache.get(cache_key, None)
+    if self is None:
       self = object.__new__(Class)
       self._v1_oid = oid
       self._v1_new_data = {}
