@@ -4,7 +4,7 @@ All rights reserved.
 
 A Python API client for the VersionOne agile project management system.
 
-This software is preliminary and pre-beta quality. We would like your 
+This software is **preliminary** and **pre-beta** quality. We would like your 
 input on design matters, notes about your use cases, and more pull requests! 
 
 This product includes software developed at VersionOne 
