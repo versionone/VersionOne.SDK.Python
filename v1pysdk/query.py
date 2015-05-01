@@ -107,8 +107,17 @@ class V1Query(object):
       found_asset.pending(updatelist)
       
   def __getattr__(self, attrname):
-    "return a sequence of the attribute from all matched results "
-    if attrname not in self.sel_list:
+    """ Return a sequence of the attribute from all matched results
+
+    .. note::
+
+       Also checks that the selected attribute does not begin with a
+       double-underscore to prevent firing off queries when python
+       dunder properties are checked (like `__length_hint__` via
+       `PEP0424 <http://legacy.python.org/dev/peps/pep-0424/>`_).
+
+    """
+    if attrname not in self.sel_list and not attrname.startswith('__'):
       self.select(attrname)
     return (getattr(i, attrname) for i in self)
 
