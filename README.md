@@ -21,25 +21,20 @@ The source code for the VersionOne Python SDK is free and open-source, and we en
   as attributes on the instance.  The metadata is only loaded once, so you must
   create a new instance of V1Meta to pick up metadata changes.  Each asset class
   comes with properties for all asset attributes and operations.
+
+```python
+from v1pysdk import V1Meta
+
+with V1Meta(
+  instance_url = 'http://localhost/VersionOne',
+  username = 'admin',
+  password = 'admin'
+  ) as v1:
+
+  user = v1.Member(20) # internal numeric ID
   
-      from v1pysdk import V1Meta
-      
-      v1 = V1Meta()  # Assumes localhost/VersionOne.Web, credentials Admin/Admin
-      
-      v1 = V1Meta(
-             address = 'v1server.mycompany.com',
-             instance = 'VersionOne',
-             username = 'jsmith',
-             password = 'swordfish'
-             )
-
-      Story = v1.Story
-      
-      my_story = Story(1005) # internal numeric ID
-      
-      print my_story.CreateDate, my_story.Name
-      
-
+  print user.CreateDate, user.Name
+```
 
 ### Simple access to individual assets:
 
