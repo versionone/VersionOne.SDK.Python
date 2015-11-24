@@ -1,18 +1,17 @@
-# v1pysdk #
-Copyright (c) 2012 VersionOne, Inc.
-All rights reserved.
+# VersionOne Python SDK #
 
-A Python API client for the VersionOne agile project management system.
+The VersionOne Python SDK is an open-source and community supported client for the VersionOne API.
 
-This software is preliminary and pre-beta quality. We would like your 
-input on design matters, notes about your use cases, and more pull requests! 
+As an open-sourced and community supported project, the VersionOne Python SDK is not formally supported by VersionOne.
 
-This product includes software developed at VersionOne 
-(http://versionone.com/). This product is open source and is licensed 
-under a modified BSD license, which reflects our intent that software 
-built with a dependency on v1pysdk can be commercial or open source, 
-as the authors see fit. Please see LICENSE.md .
+That said, there are a number of options for getting your questions addressed:
 
+* [StackOverflow](http://stackoverflow.com/questions/tagged/versionone): For asking questions of the VersionOne Development Community.
+* [GitHub Issues](https://github.com/versionone/VersionOne.SDK.Python/issues): For submitting issues that others may try to address.
+
+In general, StackOverflow is your best option for getting support for the VersionOne Python SDK.
+
+The source code for the VersionOne Python SDK is free and open-source, and we encourage you to improve it by [submitting pull requests](https://help.github.com/articles/using-pull-requests)!
 
 ## Overview
 
@@ -22,25 +21,20 @@ as the authors see fit. Please see LICENSE.md .
   as attributes on the instance.  The metadata is only loaded once, so you must
   create a new instance of V1Meta to pick up metadata changes.  Each asset class
   comes with properties for all asset attributes and operations.
+
+```python
+from v1pysdk import V1Meta
+
+with V1Meta(
+  instance_url = 'http://localhost/VersionOne',
+  username = 'admin',
+  password = 'admin'
+  ) as v1:
+
+  user = v1.Member(20) # internal numeric ID
   
-      from v1pysdk import V1Meta
-      
-      v1 = V1Meta()  # Assumes localhost/VersionOne.Web, credentials Admin/Admin
-      
-      v1 = V1Meta(
-             address = 'v1server.mycompany.com',
-             instance = 'VersionOne',
-             username = 'jsmith',
-             password = 'swordfish'
-             )
-
-      Story = v1.Story
-      
-      my_story = Story(1005) # internal numeric ID
-      
-      print my_story.CreateDate, my_story.Name
-      
-
+  print user.CreateDate, user.Name
+```
 
 ### Simple access to individual assets:
 

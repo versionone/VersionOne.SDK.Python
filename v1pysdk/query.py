@@ -74,7 +74,9 @@ class V1Query(object):
     for sel in args:
       parts = split_attribute(sel)
       for i in range(1, len(parts)):
-        self.sel_list.append('.'.join(parts[:i]))
+        pname = '.'.join(parts[:i])
+        if pname not in self.sel_list:
+          self.sel_list.append(pname)
       self.sel_list.append(sel)
     return self
     
