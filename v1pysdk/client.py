@@ -167,8 +167,8 @@ class V1Server(object):
         raise V1Error(exception)
     return document
    
-  def get_asset_xml(self, asset_type_name, oid):
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+  def get_asset_xml(self, asset_type_name, oid, moment=None):
+    path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, moment) if moment else '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path)
     
   def get_query_xml(self, asset_type_name, where=None, sel=None):
@@ -189,8 +189,8 @@ class V1Server(object):
     query = {'op': opname}
     return self.get_xml(path, query=query, postdata={})
     
-  def get_attr(self, asset_type_name, oid, attrname):
-    path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
+  def get_attr(self, asset_type_name, oid, attrname, moment=None):
+    path = '/rest-1.v1/Data/{0}/{1}/{3}/{2}'.format(asset_type_name, oid, attrname, moment) if moment else '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
     return self.get_xml(path)
   
   def create_asset(self, asset_type_name, xmldata, context_oid=''):

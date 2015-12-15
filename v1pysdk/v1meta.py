@@ -136,8 +136,8 @@ class V1Meta(object):
   def execute_operation(self, asset_type_name, oid, opname):
     return self.server.execute_operation(asset_type_name, oid, opname)
     
-  def get_attr(self, asset_type_name, oid, attrname):
-    xml = self.server.get_attr(asset_type_name, oid, attrname)
+  def get_attr(self, asset_type_name, oid, attrname, moment=None):
+    xml = self.server.get_attr(asset_type_name, oid, attrname, moment)
     dummy_asset = ElementTree.Element('Asset')
     dummy_asset.append(xml)
     return self.unpack_asset(dummy_asset)[attrname]
@@ -145,8 +145,8 @@ class V1Meta(object):
   def query(self, asset_type_name, wherestring, selstring):
     return self.server.get_query_xml(asset_type_name, wherestring, selstring)
     
-  def read_asset(self, asset_type_name, asset_oid):
-    xml = self.server.get_asset_xml(asset_type_name, asset_oid)
+  def read_asset(self, asset_type_name, asset_oid, moment=None):
+    xml = self.server.get_asset_xml(asset_type_name, asset_oid, moment)
     return self.unpack_asset(xml)
     
   def unpack_asset(self, xml):
@@ -237,9 +237,10 @@ class V1Meta(object):
       return None
   
   def asset_from_oid(self, oidtoken):
-    asset_type, asset_id = oidtoken.split(':')[:2]
+    oid_parts = oidtoken.split(":")
+    (asset_type, asset_id, moment) = oid_parts if len(oid_parts)>2 else (oid_parts[0], oid_parts[1], None)
     AssetClass = self.asset_class(asset_type)
-    instance = AssetClass(asset_id)
+    instance = AssetClass(asset_id, moment)
     return instance
     
   def set_attachment_blob(self, attachment, data=None):
