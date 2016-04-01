@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
   name = "v1pysdk-unofficial",
-  version = "0.4.post3",
+  version = "0.4.post4",
   description = "VersionOne API client",
   author = "Joe Koberg (VersionOne, Inc.)",
   author_email = "Joe.Koberg@versionone.com",
@@ -15,7 +15,6 @@ setup(
     ],
   include_package_data=True,
   install_requires = [
-    'elementtree',
     'testtools',
     'iso8601',
     'python-ntlm',
