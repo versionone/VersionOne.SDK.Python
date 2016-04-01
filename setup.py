@@ -17,7 +17,6 @@ setup(
     ],  
   
   install_requires = [
-    'elementtree',
     'testtools',
     'iso8601',
     'python-ntlm',
