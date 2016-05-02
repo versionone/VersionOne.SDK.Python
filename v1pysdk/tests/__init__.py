@@ -1,3 +1,3 @@
 import connect_tests
-import meta_tests
+import string_utils_tests
 

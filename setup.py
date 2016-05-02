@@ -21,6 +21,7 @@ setup(
     'testtools',
     'iso8601',
     'python-ntlm',
+    'mock'
     ],
     
   test_suite = "v1pysdk.tests",
