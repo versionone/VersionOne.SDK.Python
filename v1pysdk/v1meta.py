@@ -10,7 +10,8 @@ from special_class_methods import special_classes
 from none_deref import NoneDeref
 from string_utils import split_attribute
 
-class V1Meta(object):        
+
+class V1Meta(object):
   def __init__(self, *args, **kw):
     self.server = V1Server(*args, **kw)
     self.global_cache = {}
@@ -142,8 +143,8 @@ class V1Meta(object):
     dummy_asset.append(xml)
     return self.unpack_asset(dummy_asset)[attrname]
     
-  def query(self, asset_type_name, wherestring, selstring):
-    return self.server.get_query_xml(asset_type_name, wherestring, selstring)
+  def query(self, asset_type_name, where, sel):
+    return self.server.get_query_xml('Data', asset_type_name, where, sel)
     
   def read_asset(self, asset_type_name, asset_oid, moment=None):
     xml = self.server.get_asset_xml(asset_type_name, asset_oid, moment)

@@ -38,8 +38,9 @@ class V1Query(object):
       return ';'.join(terms)
 
   def run_single_query(self, url_params={}, api="Data"):
-      # warning: tight coupling ahead
-      xml = self.asset_class._v1_v1meta.server.get_query_xml(self.asset_class._v1_asset_type_name)
+      where = url_params['where']
+      sel = url_params['sel']
+      xml = self.asset_class._v1_v1meta.server.get_query_xml(api, self.asset_class._v1_asset_type_name, where, sel)
       return xml
 
   def run_query(self):

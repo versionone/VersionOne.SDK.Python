@@ -109,8 +109,8 @@ class V1Server(object):
         exception, body = self.http_client.get(url)
         return self.__parse_xml(body, exception)
 
-    def get_query_xml(self, asset_type_name, where=None, sel=None):
-        path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
+    def get_query_xml(self, api, asset_type_name, where=None, sel=None):
+        path = '/rest-1.v1/{0}/{1}'.format(api, asset_type_name)
         query = {}
         if where is not None:
             query['Where'] = where
