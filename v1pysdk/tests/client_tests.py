@@ -55,8 +55,20 @@ class TestV1Server(unittest.TestCase):
                                                  postdata={})
         self.assertEqual('root', xml.tag)
 
-    if __name__ == '__main__':
-        unittest.main()
+    def test_get_attr_without_moment(self):
+        xml = self.server.get_attr(asset_type_name='Story', oid='1234', attrname='AssetState')
+
+        self.client.get.assert_called_once_with('https://local/V1/rest-1.v1/Data/Story/1234/AssetState')
+        self.assertEqual('root', xml.tag)
+
+    def test_get_attr_with_moment(self):
+        xml = self.server.get_attr(asset_type_name='Story', oid='1234', attrname='AssetState', moment='1016')
+
+        self.client.get.assert_called_once_with('https://local/V1/rest-1.v1/Data/Story/1234/1016/AssetState')
+        self.assertEqual('root', xml.tag)
+
+        if __name__ == '__main__':
+            unittest.main()
 
 
 class TestHttpClient(unittest.TestCase):
