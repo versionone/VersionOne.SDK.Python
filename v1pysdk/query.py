@@ -38,8 +38,12 @@ class V1Query(object):
       return ';'.join(terms)
 
   def run_single_query(self, url_params={}, api="Data"):
-      where = url_params['where']
-      sel = url_params['sel']
+      where = None
+      sel = None
+      if 'where' in url_params:
+        where = url_params['where']
+      if 'sel' in url_params:
+        sel = url_params['sel']
       xml = self.asset_class._v1_v1meta.server.get_query_xml(api, self.asset_class._v1_asset_type_name, where, sel)
       return xml
 
