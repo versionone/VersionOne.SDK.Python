@@ -119,8 +119,11 @@ class V1Meta(object):
         node = Element('Attribute')
         node.set('name', attrname)
         node.set('act', 'set')
-        node.text = str(newvalue)
-      update_doc.append(node)
+        if isinstance(newvalue, unicode) != True:
+            node.text = str(newvalue).decode('utf-8')
+        else:
+            node.text = newvalue
+       update_doc.append(node)
     return update_doc
     
   def create_asset(self, asset_type_name, newdata):
