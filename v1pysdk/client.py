@@ -47,7 +47,21 @@ class V1AssetNotFoundError(V1Error): pass
 class V1Server(object):
   "Accesses a V1 HTTP server as a client of the XML API protocol"
 
-  def __init__(self, address="localhost", instance="VersionOne.Web", username='', password='', scheme="http", instance_url=None, logparent=None, loglevel=logging.ERROR):
+  def __init__(self, address="localhost", instance="VersionOne.Web", username='', password='', token=None, scheme="http", instance_url=None, logparent=None, loglevel=logging.ERROR):
+    """
+    If *instance_url* is set its value will override address, instance,
+    scheme and object's instance_url attributes.
+    If *token* is not None a HTTP header will be added to each request.
+    :param address: target hostname
+    :param instance: instance
+    :param username: credentials (username)
+    :param password: credentials (password)
+    :param token: credentials (authentication token)
+    :param scheme: HTTP scheme
+    :param instance_url: instance URL
+    :param logparent: logger prefix
+    :param loglevel: logging level
+    """
     if instance_url:
       self.instance_url = instance_url
       parsed = urlparse(instance_url)
@@ -66,6 +80,8 @@ class V1Server(object):
     self.logger.setLevel(loglevel)
     self.username = username
     self.password = password
+    if token:
+      self.token = token
     self._install_opener()
         
   def _install_opener(self):
@@ -74,6 +90,9 @@ class V1Server(object):
     password_manager.add_password(None, base_url, self.username, self.password)
     handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
     self.opener = urllib2.build_opener(*handlers)
+    if self.token:
+      self.opener.addheaders.append(
+        ('Authorization', 'Bearer {token}'.format(token=self.token)))
     self.opener.add_handler(HTTPCookieProcessor())
 
   def http_get(self, url):
