@@ -80,19 +80,19 @@ class V1Server(object):
     self.logger.setLevel(loglevel)
     self.username = username
     self.password = password
-    if token:
-      self.token = token
+    self.token = token
     self._install_opener()
         
   def _install_opener(self):
     base_url = self.build_url('')
-    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    password_manager.add_password(None, base_url, self.username, self.password)
-    handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
-    self.opener = urllib2.build_opener(*handlers)
     if self.token:
-      self.opener.addheaders.append(
-        ('Authorization', 'Bearer {token}'.format(token=self.token)))
+      self.opener = urllib2.build_opener()
+      self.opener.addheaders.append( ('Authorization', 'Bearer {token}'.format(token=self.token)) )
+    else:
+      password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+      password_manager.add_password(None, base_url, self.username, self.password)
+      handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
+      self.opener = urllib2.build_opener(*handlers)
     self.opener.add_handler(HTTPCookieProcessor())
 
   def http_get(self, url):
