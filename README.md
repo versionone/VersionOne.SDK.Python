@@ -149,14 +149,17 @@ with V1Meta(
   upon which you can call more `.where()`'s, `.select()`'s, and `.sort()`'s.  Iterating through
   the query object will run the query.
 
-  the `.first()` or `.queryAll()` methods on a query object will run the query and return the appropriate result.
+  the `.first()`, `.queryAll()`, and `.reQueryAll()` methods on a query object will run the query immediately
+  and return the appropriate result.
 
   the `find()` can be used to perform a server-side whole-word match on a field, though it's server intensive,
   can only match one field, and should be used sparing.
 
   the `page()` can be used to limit results for the purposes of performing server-side paging.
 
-  Query results
+  the `reQueryAll()` can be used like the `queryAll()`, but will clear all previously cached data and re-run
+  the HTTP query if any query options have been changed, allowing for easily repeating a query where only
+  response limits such as `page()` have changed.
 
 #### Simple query syntax:
 
@@ -212,6 +215,29 @@ with V1Meta(
         pageStart += pageSize
         print("Page " + str(pageNum) + " : " + ',   '.join(results.Name))
 ```
+
+  Alternatively the `reQueryAll()` can be used to force re-querying of the content based on updated 
+  query settings to make paging easier to implement.
+
+```python
+    pageNum = 0
+    pageSize = 3
+    pageStart = 0
+    results = ( v1.Story
+                .select('Name')
+                .filter(str(myFilter))
+                .sort('-Name')
+               )
+
+    while True:
+        results = results.page(size=pageSize, start=pageStart).reQueryAll()
+        if not len(results):
+            break;
+        pageNum += 1
+        pageStart += pageSize
+        print("Page " + str(pageNum) + " : " + ',   '.join(results.Name))
+```
+
 #### Sorting
 
   Sorting can be included in the query by specifying the order of the columns to sort on, and whether
@@ -238,6 +264,7 @@ with V1Meta(
     results = v1.Story.select('Name').filter(str(myFilter)).find('Get a', field='Name')
     print ', '.join(results.Name) #=> Get a handle on filtering, Get a toolkit for ease of use
 ```
+
 #### Advanced selection, taking the standard V1 selection syntax.
 
   The `select()` operator will allow arbitrary V1 "select" terms, and will add
@@ -385,18 +412,30 @@ with V1Meta(
   Assets do not make a request until a data item is needed from them. Further attribute access
   is cached if a previous request returned that attribute. Otherwise a new request is made.
 
-  The fastest way to collect and use a set of assets is to query, with the attributes
+  The fastest way to collect and use a set of assets is to query with the attributes
   you expect to use included in the select list.  The entire result set will be returned
   in a single HTTP transaction if you manually call one of the methods that triggers a full query.
-  These methods include __iter__ (e.g. .join() uses this), __len__, and queryAll.
+  These methods include `__iter__()` (e.g. .join() uses this), `__len__()`, `queryAll()`, and `reQueryAll()`.
 
   Writing to assets does not require reading them; setting attributes and calling the commit
   function does not invoke the "read" pipeline.  Writing assets requires one HTTP POST per dirty
   asset instance.
 
   When an asset is committed or an operation is called, the asset data is invalidated and will
-  be read again on the next attribute access.  Grouping your updates then calling queryAll() again
-  to perform a bulk update can enhance performance.
+  be read again on the next attribute access.  Grouping your updates then calling queryAll() on a fresh
+  query is a good way to enhance performance.
+
+  GOTCHA: `reQueryAll()` tracks the dirty state of the query object separately from the way asset data
+    is invalidated following an update.  Unless the terms of the query have been changed, the `reQueryAll`
+    won't update the cached data and a new query will be generated for each invalidated data item accessed.
+    To avoid this, adding and then restoring a query term on the query object can be used to cause the
+    re-query to actually occur.
+
+  `reQueryAll()` can be very useful when implementing paging, changing the sorting, etc, but it should
+  be used with care.  It clears all cached data, so any fields that were not included in the original query
+  and have since been retrieved are also cleared.  Accessing those fields will prompt the same individual
+  query as before.  To avoid this problem, either include the extra field(s) in your initial query, or
+  create a new query object for the updated query terms.
 
 ## TODO
 
@@ -418,8 +457,6 @@ with V1Meta(
 
   * Correctly handle multi-valued attributes including removal of values.
 
-  * Update to support Python 3 dynamically.
-
 ## Installation
 
 run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONPATH.
@@ -427,7 +464,12 @@ run `python setup.py install`, or just copy the v1pysdk folder into your PYTHONP
 
 ## Revision History
 
-See the GitHub history for additional follow-up history.
+2018-06-12 v0.5 - Dynamic Python3 support added.
+
+  Add page(), sort(), queryAll(), find(), max_length(), length(), and support for len() usage to 
+  the query objects.
+
+  Primary repository moved to a fork that's maintained.
 
 2013-09-27 v0.4 - A correction has been made to the multi-valued relation setter code.  It used the
   wrong value for the XML "act" attribute, so multi-value attributes never got set correctly.  Note
