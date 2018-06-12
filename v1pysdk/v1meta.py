@@ -1,14 +1,16 @@
+import sys
+
 try:
     from xml.etree import ElementTree
 except ImportError:
     from elementtree import ElementTree
 
-from client import *
-from base_asset import BaseAsset
-from cache_decorator import memoized
-from special_class_methods import special_classes
-from none_deref import NoneDeref
-from string_utils import split_attribute
+from .client import *
+from .base_asset import BaseAsset
+from .cache_decorator import memoized
+from .special_class_methods import special_classes
+from .none_deref import NoneDeref
+from .string_utils import split_attribute
 
 class V1Meta(object):        
   def __init__(self, *args, **kw):
@@ -88,7 +90,7 @@ class V1Meta(object):
       for asset in self.dirtylist:
           try:
               asset._v1_commit()
-          except V1Error, e:
+          except V1Error as e:
               errors.append(e)          
           self.dirtylist = []
       return errors
@@ -119,7 +121,7 @@ class V1Meta(object):
         node = Element('Attribute')
         node.set('name', attrname)
         node.set('act', 'set')
-        if isinstance(newvalue, unicode) != True:
+        if ((sys.version_info >= (3,0)) and not isinstance(newvalue, str)) or ((sys.version_info < (3,0)) and isinstance(newvalue, unicode)):
             node.text = str(newvalue).decode('utf-8')
         else:
             node.text = newvalue
@@ -252,7 +254,8 @@ class V1Meta(object):
       
   get_attachment_blob = set_attachment_blob
       
-    
+
+  # This will eventually require iso8601 module
   #type_converters = dict(
   #  Boolean = bool
   #  Numeric = float,

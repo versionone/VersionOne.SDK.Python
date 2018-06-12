@@ -1,9 +1,21 @@
 
 import logging, time, base64
-import urllib2
-from urllib2 import Request, urlopen, HTTPError, HTTPBasicAuthHandler, HTTPCookieProcessor
-from urllib import urlencode
-from urlparse import urlunparse, urlparse
+
+import sys
+if (sys.version_info < (3,0)):
+    #Python2 way of doing this
+    import urllib2 as theUrlLib  #must be a name matching the Python3 urllib.request
+    from urllib2 import Request, urlopen, HTTPBasicAuthHandler, HTTPCookieProcessor
+    from urllib import urlencode
+    from urlparse import urlunparse,urlparse
+else:
+    #Python3 way of doing this
+    import urllib.request as theUrlLib #must be a name matching the Python2 urllib2
+    import urllib.error, urllib.parse
+    from urllib.request import Request, urlopen, HTTPBasicAuthHandler, HTTPCookieProcessor
+    from urllib.error import HTTPError
+    from urllib.parse import urlencode
+    from urllib.parse import urlunparse, urlparse
 
 try:
     from xml.etree import ElementTree
@@ -15,7 +27,10 @@ except ImportError:
 AUTH_HANDLERS = [HTTPBasicAuthHandler]
 
 try:
-    from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
+    if (sys.version_info < (3,0)):
+        from ntlm.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
+    else:
+        from ntlm3.HTTPNtlmAuthHandler import HTTPNtlmAuthHandler
 except ImportError:
     logging.warn("Windows integrated authentication module (ntlm) not found.")
 else:
@@ -70,10 +85,10 @@ class V1Server(object):
         
   def _install_opener(self):
     base_url = self.build_url('')
-    password_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+    password_manager = theUrlLib.HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(None, base_url, self.username, self.password)
     handlers = [HandlerClass(password_manager) for HandlerClass in AUTH_HANDLERS]
-    self.opener = urllib2.build_opener(*handlers)
+    self.opener = theUrlLib.build_opener(*handlers)
     self.opener.add_handler(HTTPCookieProcessor())
 
   def http_get(self, url):
@@ -129,7 +144,7 @@ class V1Server(object):
       self._debug_headers(response.headers)
       self._debug_body(body, response.headers)
       return (None, body)
-    except HTTPError, e:
+    except HTTPError as e:
       if e.code == 401:
           raise
       body = e.fp.read()

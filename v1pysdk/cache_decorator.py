@@ -11,7 +11,7 @@ def cached_by_keyfunc(keyfunc):
     data = {}
     def new_f(self, *args, **kw):
       new_key = keyfunc(old_f, args, kw, data)
-      if data.has_key(new_key):
+      if new_key in data:
         return data[new_key]
       new_value = old_f(self, *args, **kw)
       data[new_key] = new_value

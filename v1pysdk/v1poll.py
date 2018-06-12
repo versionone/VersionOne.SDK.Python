@@ -1,7 +1,7 @@
 
 
 
-from v1meta import V1Meta
+from .v1meta import V1Meta
 
 import sqlite3
 from collections import defaultdict
