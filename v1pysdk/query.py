@@ -6,7 +6,7 @@ class V1Query(object):
   select list and the query criteria, then iterate over the object to execute
   and use the query results."""
   
-  def __init__(self, asset_class, sel_string=None, filterexpr=None):
+  def __init__(self, asset_class, sel_string=None, filterexpr=None, tokenFlag=False):
     "Takes the asset class we will be querying"
     self.asset_class = asset_class
     self.where_terms = {}
@@ -17,6 +17,7 @@ class V1Query(object):
     self.sel_string = sel_string
     self.empty_sel = sel_string is None
     self.where_string = filterexpr
+    self.token = tokenFlag
     
   def __iter__(self):
     "Iterate over the results."
@@ -39,7 +40,11 @@ class V1Query(object):
             
   def run_single_query(self, url_params={}, api="Data"):
       urlquery = urlencode(url_params)
-      urlpath = '/rest-1.v1/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
+      # need to determine if using access token how to od for /rest-1.oauth.v1/....
+      if self.token:
+        urlpath = '/rest-1.oauth.v1/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
+      else:
+        urlpath = '/rest-1.v1/{1}/{0}'.format(self.asset_class._v1_asset_type_name, api)
       # warning: tight coupling ahead
       xml = self.asset_class._v1_v1meta.server.get_xml(urlpath, query=urlquery)
       return xml
