@@ -187,11 +187,17 @@ class V1Server(object):
     return document
    
   def get_asset_xml(self, asset_type_name, oid, moment=None):
-    path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, moment) if moment else '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    if self.token:
+      path = '/rest-1.oauth.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, moment) if moment else '/rest-1.oauth.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    else:
+      path = '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, moment) if moment else '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path)
     
   def get_query_xml(self, asset_type_name, where=None, sel=None):
-    path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
+    if self.token:
+      path = '/rest-1..oauth.v1/Data/{0}'.format(asset_type_name)
+    else:
+      path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
     query = {}
     if where is not None:
         query['Where'] = where
@@ -204,12 +210,18 @@ class V1Server(object):
     return self.get_xml(path)
     
   def execute_operation(self, asset_type_name, oid, opname):
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    if self.token:
+      path = '/rest-1.oauth.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    else:
+      path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     query = {'op': opname}
     return self.get_xml(path, query=query, postdata={})
     
   def get_attr(self, asset_type_name, oid, attrname, moment=None):
-    path = '/rest-1.v1/Data/{0}/{1}/{3}/{2}'.format(asset_type_name, oid, attrname, moment) if moment else '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
+    if self.token:
+      path = '/rest-1.oauth.v1/Data/{0}/{1}/{3}/{2}'.format(asset_type_name, oid, attrname, moment) if moment else '/rest-1.oauth.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
+    else:
+      path = '/rest-1.v1/Data/{0}/{1}/{3}/{2}'.format(asset_type_name, oid, attrname, moment) if moment else '/rest-1.v1/Data/{0}/{1}/{2}'.format(asset_type_name, oid, attrname)
     return self.get_xml(path)
   
   def create_asset(self, asset_type_name, xmldata, context_oid=''):
@@ -217,12 +229,18 @@ class V1Server(object):
     query = {}
     if context_oid:
       query = {'ctx': context_oid}
-    path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
+    if self.token:
+      path = '/rest-1.oauth.v1/Data/{0}'.format(asset_type_name)
+    else:
+      path = '/rest-1.v1/Data/{0}'.format(asset_type_name)
     return self.get_xml(path, query=query, postdata=body)
     
   def update_asset(self, asset_type_name, oid, update_doc):
     newdata = ElementTree.tostring(update_doc, encoding='utf-8')
-    path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    if self.token:
+      path = '/rest-1.oauth.v1/Data/{0}/{1}'.format(asset_type_name, oid)
+    else:
+      path = '/rest-1.v1/Data/{0}/{1}'.format(asset_type_name, oid)
     return self.get_xml(path, postdata=newdata)
 
 
